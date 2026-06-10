@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+
+    --surface: 240 8% 7%;
+    --surface-elevated: 240 6% 10%;
+
+    --card: 240 8% 7%;
+    --card-foreground: 0 0% 98%;
+
+    --primary: 45 100% 88%;
+    --primary-foreground: 240 10% 4%;
+
+    --secondary: 240 4% 14%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 4% 14%;
+    --muted-foreground: 240 5% 55%;
+
+    --accent: 45 100% 88%;
+    --accent-foreground: 240 10% 4%;
+
+    --border: 240 4% 16%;
+    --border-subtle: 240 4% 10%;
+
+    --input: 240 4% 16%;
+    --ring: 45 100% 88%;
+
+    --positive: 142 72% 55%;
+    --warning: 25 95% 60%;
+    --protective: 213 94% 68%;
+
+    --destructive: 0 63% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-accent/20 text-foreground;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+}
