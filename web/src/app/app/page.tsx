@@ -17,7 +17,7 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isConnected) router.replace("/");
+    if (!isConnected) router.replace("/onboard");
   }, [isConnected, router]);
 
   const { totalFormatted, isLoading: valueLoading } = useTotalValue();
