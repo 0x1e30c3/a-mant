@@ -17,8 +17,11 @@ export const VAULT_ABI = parseAbi([
   "function getRebalanceHistory(address user) view returns ((string fromToken, string toToken, uint256 amount, string reason, uint256 timestamp, string signalSource)[])",
   "function getTotalValue(address user) view returns (uint256)",
   "function pendingYield(address user) view returns (uint256)",
+  "function lifiDiamond() view returns (address)",
   "event Deposited(address indexed user, address indexed token, uint256 amount)",
+  "event Withdrawn(address indexed user, address indexed token, uint256 amount)",
   "event Rebalanced(address indexed user, string fromToken, string toToken, uint256 amount, string reason, string signalSource)",
+  "event SwappedViaLifi(address indexed user, address indexed fromToken, address indexed toToken, uint256 fromAmount, uint256 receivedAmount)",
   "event GoalSet(address indexed user, uint256 goalAmount, uint256 deadline, uint8 riskMode)",
 ]);
 

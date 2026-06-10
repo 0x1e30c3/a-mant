@@ -3,10 +3,10 @@ import {
   createPublicClient,
   http,
   parseAbi,
-  getContract,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { Decision, UserState } from "../types/index.js";
+import { getLifiSwapData, validateLifiCalldata } from "./lifi.js";
 
 const mantleChain = {
   id: 5000,
@@ -17,10 +17,14 @@ const mantleChain = {
   },
 } as const;
 
+// ─── ABIs ─────────────────────────────────────────────────────────────────────
+
 const VAULT_ABI = parseAbi([
+  "function executeSwapViaLifi(address user, address fromToken, address toToken, uint256 fromAmount, uint256 minToAmount, bytes lifiCalldata) external",
   "function logRebalance(address user, string fromToken, string toToken, uint256 amount, string reason, string signalSource) external",
   "function accrueYield(address user, uint256 amount) external",
-  "function getPosition(address user) view returns (uint256 usdyAmount, uint256 methAmount, uint256 goalAmount, uint256 goalDeadline, uint8 riskMode, bool active, uint256 depositedAt, uint256 totalYieldClaimed)",
+  "function getPosition(address user) view returns ((uint256 usdyAmount, uint256 methAmount, uint256 goalAmount, uint256 goalDeadline, uint8 riskMode, bool active, uint256 depositedAt, uint256 totalYieldClaimed))",
+  "function lifiDiamond() view returns (address)",
 ]);
 
 const AGENT_ABI = parseAbi([
@@ -33,6 +37,15 @@ const AGENT_ABI = parseAbi([
 const CHRONICLE_ABI = parseAbi([
   "function createChapter(address user, string title, string narrative, int256 impactAmount, uint8 chapterType, string worldContext) external returns (uint256)",
 ]);
+
+// ─── Token addresses ──────────────────────────────────────────────────────────
+
+const TOKEN_ADDRESS: Record<string, `0x${string}`> = {
+  USDY: "0x5bE26527e817998A7206475496fDE1E68957c5A6",
+  METH: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0",
+};
+
+// ─── Clients ──────────────────────────────────────────────────────────────────
 
 function getClients() {
   const pk = process.env.PRIVATE_KEY as `0x${string}`;
@@ -54,19 +67,81 @@ function getClients() {
   return { walletClient, publicClient, account };
 }
 
+// ─── Execute decision ─────────────────────────────────────────────────────────
+
 export async function executeDecision(
   userAddress: `0x${string}`,
   decision: Decision,
-  agentId: bigint
+  _agentId: bigint
 ): Promise<`0x${string}` | null> {
   if (decision.action === "HOLD") return null;
 
   const { walletClient, publicClient } = getClients();
   const vaultAddress = process.env.VAULT_ADDRESS as `0x${string}`;
 
-  console.log(`[executor] ${decision.action} for ${userAddress}`);
-  console.log(`[executor] Reason: ${decision.reason}`);
+  console.log(`[executor] ${decision.action} ${decision.fromToken ?? ""}→${decision.toToken ?? ""} for ${userAddress}`);
+  console.log(`[executor] Amount: ${decision.amount ?? 0n} | Reason: ${decision.reason}`);
 
+  // ── Try real swap via LI.FI ──────────────────────────────────────────────
+  if (
+    (decision.action === "REBALANCE" || decision.action === "PROTECT") &&
+    decision.fromToken &&
+    decision.toToken &&
+    decision.amount &&
+    decision.amount > 0n
+  ) {
+    try {
+      // Read the configured LI.FI Diamond address from vault
+      const lifiDiamond = await publicClient.readContract({
+        address: vaultAddress,
+        abi: VAULT_ABI,
+        functionName: "lifiDiamond",
+      });
+
+      if (lifiDiamond && lifiDiamond !== "0x0000000000000000000000000000000000000000") {
+        console.log(`[executor] Fetching LI.FI quote for ${decision.fromToken}→${decision.toToken}...`);
+
+        const quote = await getLifiSwapData(
+          decision.fromToken as "USDY" | "METH",
+          decision.toToken as "USDY" | "METH",
+          decision.amount,
+          vaultAddress,
+          decision.action === "PROTECT" ? 0.01 : 0.005 // 1% slippage for protection (urgency)
+        );
+
+        if (quote && validateLifiCalldata(quote.calldata, quote.toAddress, lifiDiamond)) {
+          console.log(`[executor] LI.FI route found — est. received: ${quote.estimatedReceived}, gas: $${quote.gasCostUsd}`);
+
+          const hash = await walletClient.writeContract({
+            address: vaultAddress,
+            abi: VAULT_ABI,
+            functionName: "executeSwapViaLifi",
+            args: [
+              userAddress,
+              TOKEN_ADDRESS[decision.fromToken],
+              TOKEN_ADDRESS[decision.toToken],
+              decision.amount,
+              quote.minReceived,
+              quote.calldata,
+            ],
+          });
+
+          await publicClient.waitForTransactionReceipt({ hash });
+          console.log(`[executor] ✓ Real swap executed via LI.FI: ${hash}`);
+          return hash;
+        } else {
+          console.log("[executor] LI.FI route unavailable, falling back to simulation");
+        }
+      } else {
+        console.log("[executor] LI.FI not configured on vault, using simulation");
+      }
+    } catch (err) {
+      console.warn("[executor] LI.FI execution failed, falling back:", err);
+    }
+  }
+
+  // ── Fallback: simulation (accounting update only) ────────────────────────
+  console.log("[executor] Using logRebalance (simulation)");
   try {
     const hash = await walletClient.writeContract({
       address: vaultAddress,
@@ -83,13 +158,15 @@ export async function executeDecision(
     });
 
     await publicClient.waitForTransactionReceipt({ hash });
-    console.log(`[executor] Rebalance logged: ${hash}`);
+    console.log(`[executor] ✓ Rebalance simulated: ${hash}`);
     return hash;
   } catch (err) {
-    console.error("[executor] Failed to execute:", err);
+    console.error("[executor] Execution failed entirely:", err);
     return null;
   }
 }
+
+// ─── Log decision to Agent NFT ────────────────────────────────────────────────
 
 export async function logAgentDecision(
   agentId: bigint,
@@ -98,15 +175,6 @@ export async function logAgentDecision(
 ): Promise<void> {
   const { walletClient, publicClient } = getClients();
   const agentAddress = process.env.AGENT_ADDRESS as `0x${string}`;
-
-  const chapterTypeMap: Record<string, number> = {
-    REBALANCE: 0,
-    PROTECT: 1,
-    MILESTONE: 2,
-    COMPOUND: 3,
-    DISTRIBUTE: 3,
-    HOLD: 0,
-  };
 
   try {
     const hash = await walletClient.writeContract({
@@ -124,11 +192,13 @@ export async function logAgentDecision(
     });
 
     await publicClient.waitForTransactionReceipt({ hash });
-    console.log(`[executor] Decision logged on-chain: ${hash}`);
+    console.log(`[executor] ✓ Decision on-chain: ${hash}`);
   } catch (err) {
     console.error("[executor] Failed to log decision:", err);
   }
 }
+
+// ─── Write Chronicle chapter ──────────────────────────────────────────────────
 
 export async function writeChapter(
   userAddress: `0x${string}`,
@@ -150,11 +220,13 @@ export async function writeChapter(
     });
 
     await publicClient.waitForTransactionReceipt({ hash });
-    console.log(`[executor] Chapter written: ${hash}`);
+    console.log(`[executor] ✓ Chapter written: ${hash}`);
   } catch (err) {
     console.error("[executor] Failed to write chapter:", err);
   }
 }
+
+// ─── Read user state ──────────────────────────────────────────────────────────
 
 export async function getUserState(userAddress: `0x${string}`): Promise<UserState | null> {
   const { publicClient } = getClients();
@@ -177,15 +249,16 @@ export async function getUserState(userAddress: `0x${string}`): Promise<UserStat
       }),
     ]);
 
+    // position is a struct — access by named fields
     return {
       address: userAddress,
-      usdyAmount: position[0],
-      methAmount: position[1],
-      goalAmount: position[2],
-      goalDeadline: Number(position[3]),
-      riskMode: position[4],
-      active: position[5],
-      depositedAt: Number(position[6]),
+      usdyAmount: position.usdyAmount,
+      methAmount: position.methAmount,
+      goalAmount: position.goalAmount,
+      goalDeadline: Number(position.goalDeadline),
+      riskMode: position.riskMode,
+      active: position.active,
+      depositedAt: Number(position.depositedAt),
       agentId: agentId as bigint,
     };
   } catch (err) {
