@@ -75,7 +75,7 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-8.5rem)]">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4 sm:px-8">
         {isEmpty && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -137,15 +137,10 @@ export default function ChatPage() {
             <div className="px-4 py-3 bg-surface-elevated rounded-2xl rounded-bl-sm border border-border">
               <div className="flex gap-1.5">
                 {[0, 1, 2].map((i) => (
-                  <motion.div
+                  <div
                     key={i}
-                    className="w-1.5 h-1.5 rounded-full bg-muted-foreground"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 1.2,
-                      delay: i * 0.2,
-                    }}
+                    className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-pulse"
+                    style={{ animationDelay: `${i * 0.2}s` }}
                   />
                 ))}
               </div>
@@ -157,7 +152,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="px-6 py-4 border-t border-border bg-background">
+      <div className="px-5 py-4 border-t border-border bg-background sm:px-8">
         <form
           onSubmit={(e) => {
             e.preventDefault();
