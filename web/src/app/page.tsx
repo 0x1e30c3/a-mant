@@ -57,7 +57,7 @@ function SectionBlock({
   });
 
   return (
-    <div className={cn("relative px-3 py-0", className)}>
+    <div className={cn("relative py-0", className)}>
       {/* Rail lines */}
       <div className="absolute left-0 top-0 bottom-0 w-px pointer-events-none" style={{ background: T.rail }} />
       <div className="absolute right-0 top-0 bottom-0 w-px pointer-events-none" style={{ background: T.rail }} />
@@ -109,7 +109,7 @@ function Sparkle({ size = 32, opacity = 0.6 }: { size?: number; opacity?: number
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
-    <div className="text-foreground overflow-x-hidden min-h-screen" style={{ background: "#080810" }}>
+    <div className="text-foreground overflow-x-hidden min-h-screen px-5" style={{ background: "#080810" }}>
       <Navbar />
       {/* pt-[4.5rem] = below fixed navbar height */}
       <div className="pt-[4.5rem]">
@@ -129,7 +129,7 @@ export default function LandingPage() {
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 function Navbar() {
   return (
-    <div className="fixed top-0 inset-x-0 z-50 px-3 pt-3">
+    <div className="fixed top-0 inset-x-0 z-50 px-5 pt-3">
       <nav
         className="flex items-center justify-between px-4 h-12 rounded-xl"
         style={{ background: "rgba(8,8,16,0.92)", backdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.07)" }}
@@ -205,7 +205,7 @@ function Hero() {
             ))}
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: "rgba(255,239,197,0.05)", border: "1px solid rgba(255,239,197,0.12)" }}>
-            <motion.div animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="w-1.5 h-1.5 rounded-full bg-positive" />
+            <div className="w-1.5 h-1.5 rounded-full bg-positive animate-pulse" />
             <span className="text-[11px] font-medium" style={{ color: "rgba(255,239,197,0.65)" }}>Axiom · Live on Mantle L2</span>
           </div>
         </div>
@@ -265,7 +265,7 @@ function PortfolioCard() {
         </div>
         <div className="text-right">
           <div className="flex items-center justify-end gap-1.5 mb-1.5">
-            <motion.div animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 2.5 }} className="w-1.5 h-1.5 rounded-full bg-positive" />
+            <div className="w-1.5 h-1.5 rounded-full bg-positive animate-pulse" />
             <span className="text-[11px] text-muted-foreground">Axiom active</span>
           </div>
           <p className="text-[14px] font-semibold text-positive">+$38.20</p>
@@ -321,17 +321,13 @@ function Marquee() {
   return (
     <SectionBlock>
       <div className="py-3.5 overflow-hidden" style={{ background: "rgba(255,239,197,0.015)" }}>
-        <motion.div
-          animate={{ x: [0, -1200] }}
-          transition={{ repeat: Infinity, duration: 24, ease: "linear" }}
-          className="flex gap-10 whitespace-nowrap w-max"
-        >
+        <div className="flex gap-10 whitespace-nowrap w-max animate-marquee will-change-transform">
           {[...items, ...items, ...items].map((item, i) => (
             <span key={i} className="text-[11px] uppercase tracking-[0.18em] font-medium" style={{ color: "rgba(255,239,197,0.38)" }}>
               {item}<span className="ml-10" style={{ color: "rgba(255,239,197,0.1)" }}>✦</span>
             </span>
           ))}
-        </motion.div>
+        </div>
       </div>
     </SectionBlock>
   );
@@ -473,7 +469,7 @@ function SignalFeed() {
       <div style={{ background: T.cardBg }}>
         <div className="px-5 pt-8 pb-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
           <div className="flex items-center gap-2 mb-3">
-            <motion.div animate={{ opacity: [1, 0.2, 1] }} transition={{ repeat: Infinity, duration: 2.5 }} className="w-1.5 h-1.5 rounded-full bg-positive" />
+            <div className="w-1.5 h-1.5 rounded-full bg-positive animate-pulse" />
             <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.28)" }}>HORIZON · Live feed</p>
           </div>
           <p className="text-[1.45rem] font-light text-foreground leading-snug">What Axiom sees<br />right now</p>
@@ -535,7 +531,7 @@ function FooterCTA() {
           {/* Orb */}
           <div className="relative w-10 h-10 mb-8">
             <div className="absolute inset-0 rounded-full" style={{ background: "rgba(255,239,197,0.08)", border: "1px solid rgba(255,239,197,0.2)" }} />
-            <motion.div animate={{ scale: [1, 1.6, 1], opacity: [0.05, 0.2, 0.05] }} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }} className="absolute inset-0 rounded-full" style={{ background: T.accent }} />
+            <div className="absolute inset-0 rounded-full animate-pulse" style={{ background: T.accent }} />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: T.accent }} />
             </div>
