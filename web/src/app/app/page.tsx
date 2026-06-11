@@ -43,7 +43,7 @@ export default function DashboardPage() {
     });
 
   return (
-    <div className="px-6 py-8 space-y-8">
+    <div className="px-5 py-8 space-y-8 sm:px-8">
       {/* Hero: total value */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
