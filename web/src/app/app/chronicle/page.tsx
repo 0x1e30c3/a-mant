@@ -73,7 +73,7 @@ export default function ChroniclePage() {
   const sorted = [...chapters].reverse();
 
   return (
-    <div className="px-6 py-8">
+    <div className="px-5 py-8 sm:px-8">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
