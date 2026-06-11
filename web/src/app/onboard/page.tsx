@@ -317,10 +317,8 @@ function ActivateStep({
       >
         <div className="relative w-20 h-20 mx-auto">
           <div className="absolute inset-0 rounded-full bg-accent/10 border border-accent/20" />
-          <motion.div
-            animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.8, 0.4] }}
-            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-            className="absolute inset-2 rounded-full bg-accent/20"
+          <div
+            className="absolute inset-2 rounded-full bg-accent/20 animate-pulse"
           />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-3 h-3 rounded-full bg-accent" />
