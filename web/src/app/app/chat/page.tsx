@@ -68,7 +68,7 @@ export default function ChatPage() {
         <div className="flex items-center gap-3">
           <span
             className="relative w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: "rgba(255,239,197,0.1)", border: "1px solid rgba(255,239,197,0.25)" }}
+            style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.32)" }}
           >
             <Sparkles size={15} style={{ color: A.accent }} />
           </span>
@@ -92,7 +92,7 @@ export default function ChatPage() {
           >
             <span
               className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
-              style={{ background: "rgba(255,239,197,0.08)", border: "1px solid rgba(255,239,197,0.2)" }}
+              style={{ background: "rgba(194,138,30,0.1)", border: "1px solid rgba(194,138,30,0.3)" }}
             >
               <Sparkles size={20} style={{ color: A.accent }} />
             </span>
@@ -127,7 +127,7 @@ export default function ChatPage() {
               {msg.role === "assistant" && (
                 <span
                   className="w-7 h-7 rounded-full flex items-center justify-center mr-2 mt-0.5 flex-shrink-0"
-                  style={{ background: "rgba(255,239,197,0.1)", border: "1px solid rgba(255,239,197,0.22)" }}
+                  style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.32)" }}
                 >
                   <Sparkles size={12} style={{ color: A.accent }} />
                 </span>
@@ -136,7 +136,7 @@ export default function ChatPage() {
                 className={cn(
                   "max-w-[80%] px-4 py-2.5 text-[13.5px] leading-relaxed",
                   msg.role === "user"
-                    ? "rounded-2xl rounded-br-md text-background"
+                    ? "rounded-2xl rounded-br-md text-accent-foreground"
                     : "rounded-2xl rounded-bl-md text-foreground"
                 )}
                 style={
@@ -155,7 +155,7 @@ export default function ChatPage() {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
             <span
               className="w-7 h-7 rounded-full flex items-center justify-center mr-2 mt-0.5 flex-shrink-0"
-              style={{ background: "rgba(255,239,197,0.1)", border: "1px solid rgba(255,239,197,0.22)" }}
+              style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.32)" }}
             >
               <Sparkles size={12} style={{ color: A.accent }} />
             </span>
@@ -194,7 +194,7 @@ export default function ChatPage() {
             type="submit"
             disabled={!input.trim() || loading}
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all active:scale-90 disabled:opacity-30"
-            style={{ background: A.accent, color: "hsl(var(--background))" }}
+            style={{ background: A.accent, color: "hsl(var(--accent-foreground))" }}
             aria-label="Send"
           >
             <ArrowUp size={17} strokeWidth={2.5} />
