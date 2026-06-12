@@ -10,7 +10,7 @@ const TYPE_COLOR: Record<ChapterType, string> = {
   1: "hsl(var(--protective))",
   2: "hsl(var(--positive))",
   3: "hsl(var(--positive))",
-  4: "rgba(255,255,255,0.5)",
+  4: "rgba(20,20,30,0.45)",
 };
 
 function timeAgo(timestamp: bigint): string {
@@ -33,7 +33,7 @@ function ChapterCard({ chapter, index, isLast }: { chapter: Chapter; index: numb
       {/* Timeline rail */}
       <div className="flex flex-col items-center pt-1.5">
         <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: color, boxShadow: `0 0 10px ${color}` }} />
-        {!isLast && <span className="w-px flex-1 mt-1.5" style={{ background: "rgba(255,255,255,0.08)" }} />}
+        {!isLast && <span className="w-px flex-1 mt-1.5" style={{ background: "rgba(20,20,30,0.08)" }} />}
       </div>
 
       {/* Card */}
@@ -77,13 +77,13 @@ export default function ChroniclePage() {
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex gap-4">
               <div className="pt-1.5 flex flex-col items-center">
-                <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: "rgba(255,255,255,0.12)" }} />
+                <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: "rgba(20,20,30,0.1)" }} />
               </div>
               <div className="flex-1 pb-4">
                 <GlassCard className="p-4 space-y-2">
-                  <div className="h-3 w-16 rounded animate-pulse" style={{ background: "rgba(255,255,255,0.08)" }} />
-                  <div className="h-4 w-44 rounded animate-pulse" style={{ background: "rgba(255,255,255,0.08)" }} />
-                  <div className="h-3 w-full rounded animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
+                  <div className="h-3 w-16 rounded animate-pulse" style={{ background: "rgba(20,20,30,0.08)" }} />
+                  <div className="h-4 w-44 rounded animate-pulse" style={{ background: "rgba(20,20,30,0.08)" }} />
+                  <div className="h-3 w-full rounded animate-pulse" style={{ background: "rgba(20,20,30,0.06)" }} />
                 </GlassCard>
               </div>
             </div>
