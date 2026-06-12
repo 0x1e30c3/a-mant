@@ -2,41 +2,103 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowDownToLine, Check, X } from "lucide-react";
+import { ArrowDownToLine, Check, X, Droplets } from "lucide-react";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { A } from "@/components/app/ui";
+import { useTokenBalances } from "@/hooks/useVault";
+import { ADDRESSES, VAULT_ABI, ERC20_ABI, IS_TESTNET } from "@/lib/contracts";
+import { formatUnits, parseUnits } from "viem";
+
+type Token = "USDY" | "mETH";
+
+const TOKENS: Record<Token, { address: `0x${string}`; label: string; color: string; decimals: number }> = {
+  USDY: { address: ADDRESSES.USDY, label: "USDY", color: A.accent, decimals: 18 },
+  "mETH": { address: ADDRESSES.METH, label: "mETH", color: "hsl(var(--protective))", decimals: 18 },
+};
 
 const QUICK_AMOUNTS = [100, 500, 1000];
 
-type Status = "input" | "processing" | "done";
+type Status = "input" | "approving" | "depositing" | "done" | "fauceting";
 
-// ─── DepositModal — add funds without leaving the dashboard ───────────────────
-//   Replaces the old "Deposit → /onboard" jump (which restarted the whole
-//   onboarding flow). Stays in /app, takes an amount, confirms, then closes.
 export function DepositModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { address } = useAccount();
+  const [token, setToken] = useState<Token>("USDY");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState<Status>("input");
+  const [hash, setHash] = useState<`0x${string}` | undefined>();
 
-  // Reset whenever the sheet is dismissed.
+  const { usdyFormatted, methFormatted } = useTokenBalances();
+  const balance = token === "USDY" ? usdyFormatted : methFormatted;
+
+  const { writeContractAsync } = useWriteContract();
+  const { isLoading: txPending } = useWaitForTransactionReceipt({ hash });
+
   useEffect(() => {
     if (!open) {
       const t = setTimeout(() => {
         setAmount("");
         setStatus("input");
-      }, 250);
+        setHash(undefined);
+      }, 300);
       return () => clearTimeout(t);
     }
   }, [open]);
 
   const value = parseFloat(amount);
-  const valid = !isNaN(value) && value >= 100;
+  const valid = !isNaN(value) && value > 0;
+  const tokenInfo = TOKENS[token];
+  const parsedAmount = valid ? parseUnits(amount, tokenInfo.decimals) : 0n;
 
-  async function confirm() {
-    if (!valid) return;
-    setStatus("processing");
-    await new Promise((r) => setTimeout(r, 1800));
-    setStatus("done");
-    await new Promise((r) => setTimeout(r, 1400));
-    onClose();
+  async function handleFaucet() {
+    if (!address) return;
+    try {
+      setStatus("fauceting");
+      const hash = await writeContractAsync({
+        address: tokenInfo.address,
+        abi: ["function mint(address to, uint256 amount) external"],
+        functionName: "mint",
+        args: [address, parseUnits("1000", tokenInfo.decimals)],
+      });
+      setHash(hash);
+      await new Promise((r) => setTimeout(r, 2000));
+      setStatus("input");
+    } catch {
+      setStatus("input");
+    }
+  }
+
+  async function handleDeposit() {
+    if (!valid || !address) return;
+
+    try {
+      setStatus("approving");
+
+      const approveHash = await writeContractAsync({
+        address: tokenInfo.address,
+        abi: ERC20_ABI,
+        functionName: "approve",
+        args: [ADDRESSES.VAULT, parsedAmount],
+      });
+
+      setHash(approveHash);
+
+      await new Promise((r) => setTimeout(r, 2000));
+
+      setStatus("depositing");
+
+      const depositHash = await writeContractAsync({
+        address: ADDRESSES.VAULT,
+        abi: VAULT_ABI,
+        functionName: "deposit",
+        args: [tokenInfo.address, parsedAmount],
+      });
+
+      setHash(depositHash);
+      setStatus("done");
+    } catch {
+      setStatus("input");
+      setHash(undefined);
+    }
   }
 
   return (
@@ -48,14 +110,12 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          {/* Scrim */}
           <div
             className="absolute inset-0"
             style={{ background: "rgba(20,20,30,0.35)", backdropFilter: "blur(4px)" }}
-            onClick={status === "processing" ? undefined : onClose}
+            onClick={status === "input" ? onClose : undefined}
           />
 
-          {/* Sheet */}
           <motion.div
             className="relative w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden"
             style={{ background: "#FFFFFF", border: `1px solid ${A.cardBorder}`, boxShadow: "0 -8px 60px rgba(20,20,30,0.18)" }}
@@ -64,7 +124,6 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
             exit={{ y: 40, opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* glow */}
             <div
               className="absolute inset-x-0 top-0 h-40 pointer-events-none"
               style={{ background: "radial-gradient(ellipse 70% 100% at 50% 0%, rgba(255,205,90,0.18) 0%, transparent 70%)" }}
@@ -87,13 +146,13 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
                   </span>
                   <p className="text-[17px] font-medium text-foreground mb-1.5">Deposit confirmed</p>
                   <p className="text-[13px] text-muted-foreground">
-                    ${value.toLocaleString("en-US", { minimumFractionDigits: 2 })} is now working with Axiom.
+                    {value.toLocaleString("en-US", { minimumFractionDigits: 2 })} {token} is now working with Axiom.
                   </p>
                 </motion.div>
               ) : (
                 <motion.div key="input" exit={{ opacity: 0 }} className="relative p-6">
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-2.5">
                       <span
                         className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -103,17 +162,48 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
                       </span>
                       <div>
                         <p className="text-[15px] font-semibold text-foreground leading-tight">Add deposit</p>
-                        <p className="text-[11.5px] text-muted-foreground">Funds Axiom can allocate instantly</p>
+                        <p className="text-[11.5px] text-muted-foreground">Axiom rebalances across USDY &amp; mETH</p>
                       </div>
                     </div>
                     <button
                       onClick={onClose}
-                      disabled={status === "processing"}
+                      disabled={status !== "input"}
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30"
                       aria-label="Close"
                     >
                       <X size={16} />
                     </button>
+                  </div>
+
+                  {/* Token selector */}
+                  <div className="flex gap-2 mb-4">
+                    {(Object.keys(TOKENS) as Token[]).map((t) => {
+                      const info = TOKENS[t];
+                      const selected = t === token;
+                      const bal = t === "USDY" ? usdyFormatted : methFormatted;
+                      return (
+                        <button
+                          key={t}
+                          onClick={() => setToken(t)}
+                          disabled={status !== "input"}
+                          className="flex-1 flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                          style={{
+                            background: selected ? `${info.color}10` : A.subtle,
+                            border: `1px solid ${selected ? `${info.color}40` : A.hairline}`,
+                          }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full" style={{ background: info.color }} />
+                            <span className="text-[12.5px] font-medium" style={{ color: selected ? "foreground" : "rgba(20,20,30,0.6)" }}>
+                              {info.label}
+                            </span>
+                          </div>
+                          <span className="text-[10.5px] text-muted-foreground font-mono">
+                            {parseFloat(bal).toFixed(2)}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Amount field */}
@@ -125,19 +215,19 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
                       placeholder="0"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      disabled={status === "processing"}
+                      disabled={status !== "input"}
                       className="flex-1 bg-transparent text-[2.4rem] font-light text-foreground outline-none placeholder:text-black/15 disabled:opacity-60"
                       autoFocus
                     />
                   </div>
 
                   {/* Quick chips */}
-                  <div className="flex gap-2 mb-7">
+                  <div className="flex gap-2 mb-2">
                     {QUICK_AMOUNTS.map((a) => (
                       <button
                         key={a}
                         onClick={() => setAmount(String(a))}
-                        disabled={status === "processing"}
+                        disabled={status !== "input"}
                         className="flex-1 py-2 rounded-lg text-[12.5px] font-medium text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-40"
                         style={{ background: A.subtle, border: `1px solid ${A.hairline}` }}
                       >
@@ -146,23 +236,57 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
                     ))}
                   </div>
 
+                  {/* Balance info */}
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-5 px-0.5">
+                    <span>
+                      Wallet balance: {parseFloat(balance).toFixed(4)} {token}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {valid && parseFloat(amount) > parseFloat(balance) && (
+                        <span style={{ color: "hsl(var(--destructive))" }}>Insufficient</span>
+                      )}
+                      {IS_TESTNET && (
+                        <button
+                          onClick={handleFaucet}
+                          disabled={status !== "input"}
+                          className="flex items-center gap-1 px-2 py-1 rounded-md transition-all hover:bg-blue-50 active:scale-95 disabled:opacity-40"
+                          style={{ color: "hsl(var(--protective))", border: "1px solid rgba(100,160,255,0.25)" }}
+                        >
+                          <Droplets size={11} />
+                          <span className="font-medium">Get 1000 {token}</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Confirm */}
                   <button
-                    onClick={confirm}
-                    disabled={!valid || status === "processing"}
+                    onClick={handleDeposit}
+                    disabled={!valid || status !== "input" || parseFloat(amount) > parseFloat(balance)}
                     className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[14px] font-semibold transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none"
                     style={{ background: A.accent, color: A.onAccent }}
                   >
-                    {status === "processing" ? (
+                    {status === "approving" && (
+                      <>
+                        <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                        Approving {token}…
+                      </>
+                    )}
+                    {status === "depositing" && (
                       <>
                         <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
                         Depositing…
                       </>
-                    ) : (
-                      "Confirm deposit"
                     )}
+                    {status === "fauceting" && (
+                      <>
+                        <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                        Minting test tokens…
+                      </>
+                    )}
+                    {status === "input" && "Confirm deposit"}
                   </button>
-                  <p className="text-[11px] text-muted-foreground text-center mt-3">Minimum $100 · No lock-up</p>
+                  <p className="text-[11px] text-muted-foreground text-center mt-3">No lock-up · Axiom allocates automatically</p>
                 </motion.div>
               )}
             </AnimatePresence>
