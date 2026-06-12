@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowDownToLine, ArrowUpRight, ShieldCheck, Coins } from "lucide-react";
+import { ArrowDownToLine, ArrowUpRight, ShieldCheck, Coins, Zap, TrendingUp, BookOpen, Lock } from "lucide-react";
 import { GlassCard, Pill, SectionLabel, LiveDot, A } from "@/components/app/ui";
 import { DepositModal } from "@/components/app/DepositModal";
 import { useTotalValue, useVaultPosition, usePendingYield } from "@/hooks/useVault";
@@ -184,7 +184,7 @@ export default function DashboardPage() {
         {/* ── Side column ── */}
         <div className="space-y-4">
           {/* Axiom status */}
-          {hasAgent && profile && (
+          {hasAgent && profile ? (
             <motion.div {...fade(0.2)}>
               <GlassCard className="p-5">
                 <div className="flex items-center justify-between mb-4">
@@ -203,10 +203,59 @@ export default function DashboardPage() {
                 </div>
               </GlassCard>
             </motion.div>
+          ) : (
+            /* Axiom agent teaser card */
+            <motion.div {...fade(0.2)}>
+              <GlassCard className="overflow-hidden">
+                {/* Ambient glow top-right */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: "radial-gradient(ellipse 80% 60% at 100% 0%, rgba(194,138,30,0.13) 0%, transparent 70%)" }}
+                />
+                {/* Video banner */}
+                <div className="relative w-full overflow-hidden" style={{ height: "160px", borderBottom: "1px solid rgba(194,138,30,0.12)" }}>
+                  <video
+                    src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260424_064411_9e9d7f84-9277-41f4-ab10-59172d89e6be.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  {/* Gradient overlay so card content below blends smoothly */}
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(var(--background-raw, 250,248,243), 0.85) 100%)" }}
+                  />
+                  {/* Badge top-right */}
+                  <div className="absolute top-3 right-3">
+                    <Pill tone="accent">AI-powered</Pill>
+                  </div>
+                </div>
+                <div className="p-5">
+                  <p className="text-[13px] text-muted-foreground leading-relaxed mb-4">
+                    Axiom monitors macro signals and on-chain data every 15 min — rebalancing your portfolio automatically.
+                  </p>
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    {[
+                      { icon: Zap, label: "Auto-rebalance" },
+                      { icon: TrendingUp, label: "Yield boost" },
+                      { icon: Lock, label: "Protected" },
+                    ].map(({ icon: Icon, label }) => (
+                      <div key={label} className="flex flex-col items-center gap-1.5 py-2.5 rounded-xl" style={{ background: "rgba(20,20,30,0.04)", border: "1px solid rgba(20,20,30,0.06)" }}>
+                        <Icon size={14} style={{ color: A.accent }} />
+                        <span className="text-[10px] text-muted-foreground text-center leading-tight">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Pill tone="accent" className="text-[11px]">Activates on first deposit</Pill>
+                </div>
+              </GlassCard>
+            </motion.div>
           )}
 
           {/* Latest chapter */}
-          {latestChapter && (
+          {latestChapter ? (
             <motion.div {...fade(0.26)}>
               <Link href="/app/chronicle">
                 <GlassCard className="p-5 group">
@@ -222,7 +271,60 @@ export default function DashboardPage() {
                 </GlassCard>
               </Link>
             </motion.div>
+          ) : (
+            /* Chronicle teaser card */
+            <motion.div {...fade(0.28)}>
+              <Link href="/app/chronicle">
+                <GlassCard className="p-5 group">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(20,20,30,0.06)", border: "1px solid rgba(20,20,30,0.08)" }}>
+                        <BookOpen size={13} className="text-muted-foreground" />
+                      </span>
+                      <SectionLabel>Chronicle</SectionLabel>
+                    </div>
+                    <ArrowUpRight size={14} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </div>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed mb-4">
+                    Every Axiom decision becomes a chapter — a permanent on-chain record of your portfolio&apos;s story.
+                  </p>
+                  {/* Placeholder chapter lines */}
+                  <div className="space-y-2">
+                    {["Chapter I will appear here", "Chapter II — after your first deposit"].map((t, i) => (
+                      <div key={i} className="flex items-center gap-2.5 px-3 py-2 rounded-lg" style={{ background: "rgba(20,20,30,0.04)", border: "1px solid rgba(20,20,30,0.06)", opacity: 1 - i * 0.35 }}>
+                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "rgba(194,138,30,0.4)" }} />
+                        <p className="text-[11.5px] text-muted-foreground">{t}</p>
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+              </Link>
+            </motion.div>
           )}
+
+          {/* APY overview card */}
+          <motion.div {...fade(0.34)}>
+            <GlassCard className="p-5">
+              <SectionLabel className="mb-4">Current APY rates</SectionLabel>
+              <div className="space-y-3">
+                {[
+                  { label: "USDY", sub: "Ondo Finance · Treasury", apy: "4.5%", dot: A.accent },
+                  { label: "mETH", sub: "Mantle · ETH Staking", apy: "3.8%", dot: "hsl(var(--protective))" },
+                ].map(({ label, sub, apy, dot }) => (
+                  <div key={label} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
+                      <div>
+                        <p className="text-[13px] font-medium text-foreground">{label}</p>
+                        <p className="text-[11px] text-muted-foreground">{sub}</p>
+                      </div>
+                    </div>
+                    <span className="text-[13px] font-semibold" style={{ color: "hsl(var(--positive))" }}>{apy}</span>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+          </motion.div>
         </div>
       </div>
     </div>
