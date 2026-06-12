@@ -5,7 +5,7 @@ import { SectionBlock, SectionHeading, Reveal, T } from "./primitives";
 // ─── Pillars — 3 layers; grid on desktop, horizontal snap-scroll on mobile ────
 export function Pillars() {
   const pillars = [
-    { tag: "HORIZON", color: T.accent, bg: "rgba(255,239,197,0.04)", border: "rgba(255,239,197,0.1)", tagBg: "rgba(255,239,197,0.08)", tagBorder: "rgba(255,239,197,0.2)", title: "Macro signal monitoring", body: "Fed rate, Ondo health, ETH staking, Fear & Greed — read every 15 min. Acts only when confidence > 70%." },
+    { tag: "HORIZON", color: T.accent, bg: "rgba(194,138,30,0.06)", border: "rgba(194,138,30,0.12)", tagBg: "rgba(194,138,30,0.1)", tagBorder: "rgba(194,138,30,0.32)", title: "Macro signal monitoring", body: "Fed rate, Ondo health, ETH staking, Fear & Greed — read every 15 min. Acts only when confidence > 70%." },
     { tag: "CHRONICLE", color: "hsl(var(--positive))", bg: "rgba(64,200,120,0.03)", border: "rgba(64,200,120,0.1)", tagBg: "rgba(64,200,120,0.08)", tagBorder: "rgba(64,200,120,0.22)", title: "Your savings story", body: "Every rebalance narrated in plain language. Not raw logs — a chapter you can actually read." },
     { tag: "SAGE", color: "hsl(var(--protective))", bg: "rgba(100,160,255,0.03)", border: "rgba(100,160,255,0.1)", tagBg: "rgba(100,160,255,0.08)", tagBorder: "rgba(100,160,255,0.22)", title: "Ask anything", body: "Why did Axiom move my funds? What signal triggered it? Answers in plain language, always." },
   ];
