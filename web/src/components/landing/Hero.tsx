@@ -14,14 +14,14 @@ export function Hero() {
           className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(255,239,197,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,239,197,0.03) 1px, transparent 1px)",
+              "linear-gradient(rgba(194,138,30,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(194,138,30,0.05) 1px, transparent 1px)",
             backgroundSize: "44px 44px",
           }}
         />
         {/* Amber radial glow */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse 60% 50% at 30% 25%, rgba(255,239,197,0.08) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(ellipse 60% 50% at 30% 25%, rgba(194,138,30,0.1) 0%, transparent 70%)" }}
         />
         {/* Decorative sparkles */}
         <div className="absolute top-8 right-8 z-10 hidden sm:block"><Sparkle size={36} opacity={0.5} /></div>
@@ -34,10 +34,10 @@ export function Hero() {
             {/* Live badge */}
             <div
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-7"
-              style={{ background: "rgba(255,239,197,0.05)", border: "1px solid rgba(255,239,197,0.12)" }}
+              style={{ background: "rgba(194,138,30,0.07)", border: "1px solid rgba(194,138,30,0.28)" }}
             >
               <div className="w-1.5 h-1.5 rounded-full bg-positive animate-pulse" />
-              <span className="text-[11px] font-medium" style={{ color: "rgba(255,239,197,0.65)" }}>
+              <span className="text-[11px] font-medium" style={{ color: "rgba(194,138,30,0.95)" }}>
                 Axiom · Live on Mantle L2
               </span>
             </div>
@@ -47,7 +47,7 @@ export function Hero() {
               <br />
               <span
                 style={{
-                  background: "linear-gradient(135deg, hsl(var(--accent)) 0%, rgba(255,190,60,0.6) 100%)",
+                  background: "linear-gradient(135deg, #B5781A 0%, #D49A2A 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
@@ -75,7 +75,7 @@ export function Hero() {
               <span className="text-[11px] text-muted-foreground">Built on</span>
               <span
                 className="text-[12px] font-semibold px-2.5 py-1 rounded-full"
-                style={{ color: T.accent, background: "rgba(255,239,197,0.06)", border: "1px solid rgba(255,239,197,0.15)" }}
+                style={{ color: T.accent, background: "rgba(194,138,30,0.08)", border: "1px solid rgba(194,138,30,0.3)" }}
               >
                 Mantle L2
               </span>
@@ -87,14 +87,14 @@ export function Hero() {
             {/* Floating stat chips — desktop only */}
             <div
               className="absolute -top-5 -left-4 z-20 hidden lg:block px-3 py-2 rounded-xl text-center"
-              style={{ background: "rgba(10,10,20,0.7)", border: "1px solid rgba(255,239,197,0.14)", backdropFilter: "blur(10px)" }}
+              style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(194,138,30,0.25)", backdropFilter: "blur(10px)", boxShadow: "0 6px 20px rgba(20,20,30,0.1)" }}
             >
               <p className="text-[16px] font-light leading-none mb-0.5" style={{ color: T.accent }}>94</p>
               <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Health score</p>
             </div>
             <div
               className="absolute -bottom-4 -right-3 z-20 hidden lg:block px-3 py-2 rounded-xl text-center"
-              style={{ background: "rgba(10,10,20,0.7)", border: "1px solid rgba(255,239,197,0.14)", backdropFilter: "blur(10px)" }}
+              style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(194,138,30,0.25)", backdropFilter: "blur(10px)", boxShadow: "0 6px 20px rgba(20,20,30,0.1)" }}
             >
               <p className="text-[16px] font-light leading-none mb-0.5" style={{ color: T.accent }}>247</p>
               <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Axiom decisions</p>
