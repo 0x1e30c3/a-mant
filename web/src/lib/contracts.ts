@@ -1,12 +1,16 @@
 import { parseAbi } from "viem";
 
+const isTestnet = process.env.NEXT_PUBLIC_CHAIN_ID === "5003";
+
 export const ADDRESSES = {
   VAULT: (process.env.NEXT_PUBLIC_VAULT_ADDRESS ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
   AGENT: (process.env.NEXT_PUBLIC_AGENT_ADDRESS ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
   CHRONICLE: (process.env.NEXT_PUBLIC_CHRONICLE_ADDRESS ?? "0x0000000000000000000000000000000000000000") as `0x${string}`,
-  USDY: "0x5bE26527e817998A7206475496fDE1E68957c5A6" as `0x${string}`,
-  METH: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0" as `0x${string}`,
+  USDY: (process.env.NEXT_PUBLIC_USDY_ADDRESS ?? "0x5bE26527e817998A7206475496fDE1E68957c5A6") as `0x${string}`,
+  METH: (process.env.NEXT_PUBLIC_METH_ADDRESS ?? "0xcDA86A272531e8640cD7F1a92c01839911B90bb0") as `0x${string}`,
 } as const;
+
+export const IS_TESTNET = isTestnet;
 
 export const VAULT_ABI = parseAbi([
   "function setGoal(uint256 goalAmount, uint256 durationDays, uint8 riskMode) external",
