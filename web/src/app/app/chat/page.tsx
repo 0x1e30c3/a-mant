@@ -62,9 +62,9 @@ export default function ChatPage() {
   const isEmpty = messages.length === 0;
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-7.5rem)]">
+    <div className="flex flex-col h-[calc(100dvh-7rem)] max-w-3xl mx-auto w-full">
       {/* Axiom identity strip */}
-      <div className="px-4 sm:px-6 pt-5 pb-3">
+      <div className="pt-5 pb-3">
         <div className="flex items-center gap-3">
           <span
             className="relative w-9 h-9 rounded-full flex items-center justify-center"
@@ -83,7 +83,7 @@ export default function ChatPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 space-y-4">
+      <div className="flex-1 overflow-y-auto py-3 space-y-4">
         {isEmpty && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -173,7 +173,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="px-4 sm:px-6 py-4">
+      <div className="py-4">
         <form
           onSubmit={(e) => {
             e.preventDefault();
