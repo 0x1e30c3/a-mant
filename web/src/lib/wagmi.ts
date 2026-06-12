@@ -1,6 +1,6 @@
 import { createConfig, http } from "wagmi";
 import { defineChain } from "viem";
-import { injected, metaMask } from "wagmi/connectors";
+import { injected } from "wagmi/connectors";
 
 export const mantle = defineChain({
   id: 5000,
@@ -31,7 +31,7 @@ export const mantleTestnet = defineChain({
 
 export const config = createConfig({
   chains: [mantle, mantleTestnet],
-  connectors: [injected(), metaMask()],
+  connectors: [injected()],
   transports: {
     [mantle.id]: http(),
     [mantleTestnet.id]: http(),
