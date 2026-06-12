@@ -28,12 +28,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className={SHELL}>
           <div
             className="flex items-center justify-between gap-3 px-3 sm:px-4 h-14 rounded-xl"
-            style={{ background: "rgba(8,8,16,0.82)", backdropFilter: "blur(16px)", border: `1px solid ${A.hairline}` }}
+            style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(16px)", border: `1px solid ${A.hairline}`, boxShadow: "0 1px 3px rgba(20,20,30,0.05)" }}
           >
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
               <span
                 className="w-5 h-5 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(255,239,197,0.1)", border: "1px solid rgba(255,239,197,0.3)" }}
+                style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.4)" }}
               >
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: A.accent }} />
               </span>
@@ -52,7 +52,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       "flex items-center gap-2 px-2.5 sm:px-3.5 py-2 rounded-lg text-[12.5px] font-medium transition-all active:scale-95",
                       active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                     )}
-                    style={active ? { background: "rgba(255,239,197,0.1)", border: "1px solid rgba(255,239,197,0.18)" } : { border: "1px solid transparent" }}
+                    style={active ? { background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.3)" } : { border: "1px solid transparent" }}
                   >
                     <Icon size={15} style={active ? { color: A.accent } : undefined} />
                     <span className="hidden sm:inline">{label}</span>
@@ -63,7 +63,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             <div
               className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full flex-shrink-0"
-              style={{ background: "rgba(64,200,120,0.07)", border: "1px solid rgba(64,200,120,0.18)" }}
+              style={{ background: "rgba(36,160,90,0.1)", border: "1px solid rgba(36,160,90,0.25)" }}
             >
               <LiveDot />
               <span className="text-[11px] font-medium" style={{ color: "hsl(var(--positive))" }}>Axiom active</span>
