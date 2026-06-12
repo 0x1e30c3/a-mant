@@ -1,7 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
+import axios from "axios";
 import { Decision, MacroSignals, OnChainSignals, ChapterData } from "../types/index.js";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
+const NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
+const NVIDIA_MODEL = "meta/llama-3.1-8b-instruct";
 
 const CHAPTER_TYPE_MAP: Record<string, 0 | 1 | 2 | 3 | 4> = {
   REBALANCE: 0,
@@ -42,13 +44,22 @@ Respond in JSON: {"title": "...", "narrative": "..."}
 Keep it personal, warm, and clear. Do not use technical terms like APY, DeFi, liquidity, protocol.`;
 
   try {
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 300,
-      messages: [{ role: "user", content: prompt }],
-    });
+    const response = await axios.post(
+      `${NVIDIA_BASE_URL}/chat/completions`,
+      {
+        model: NVIDIA_MODEL,
+        max_tokens: 300,
+        messages: [{ role: "user", content: prompt }],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${NVIDIA_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
+    const text = response.data.choices?.[0]?.message?.content ?? "";
     const jsonMatch = text.match(/\{[^}]+\}/s);
 
     if (jsonMatch) {
@@ -62,7 +73,7 @@ Keep it personal, warm, and clear. Do not use technical terms like APY, DeFi, li
       };
     }
   } catch (err) {
-    console.error("[narrator] Claude generation failed:", err);
+    console.error("[narrator] Nvidia NIM generation failed:", err);
   }
 
   // Fallback if Claude fails
