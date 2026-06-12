@@ -20,7 +20,7 @@ import {
 export default function LandingPage() {
   return (
     <SmoothScroll>
-      <div className="text-foreground overflow-x-hidden min-h-screen" style={{ background: "#080810" }}>
+      <div className="text-foreground overflow-x-hidden min-h-screen" style={{ background: "hsl(var(--background))" }}>
         <Navbar />
         {/* Full-height sections; the fixed navbar floats over the hero's top */}
         <Container>
