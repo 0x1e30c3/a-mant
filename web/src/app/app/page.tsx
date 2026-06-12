@@ -57,7 +57,7 @@ export default function DashboardPage() {
             <GlassCard glow className="p-6 sm:p-8" brackets="all">
               <div
                 className="absolute inset-0 pointer-events-none"
-                style={{ background: "radial-gradient(ellipse 70% 80% at 80% 0%, rgba(255,239,197,0.08) 0%, transparent 60%)" }}
+                style={{ background: "radial-gradient(ellipse 70% 80% at 80% 0%, rgba(255,205,90,0.16) 0%, transparent 60%)" }}
               />
               <div className="relative">
                 <div className="flex items-center justify-between mb-3">
@@ -69,10 +69,10 @@ export default function DashboardPage() {
 
                 <div className="text-[3.25rem] sm:text-[4rem] leading-none font-light tracking-tight text-foreground">
                   {valueLoading ? (
-                    <span style={{ color: "rgba(255,255,255,0.15)" }}>—</span>
+                    <span style={{ color: "rgba(20,20,30,0.2)" }}>—</span>
                   ) : (
                     <>
-                      <span className="text-[1.6rem] sm:text-[2rem] align-top mr-1" style={{ color: "rgba(255,255,255,0.35)" }}>$</span>
+                      <span className="text-[1.6rem] sm:text-[2rem] align-top mr-1" style={{ color: "rgba(20,20,30,0.4)" }}>$</span>
                       {fmt(totalFormatted)}
                     </>
                   )}
@@ -85,7 +85,7 @@ export default function DashboardPage() {
                       <span className="text-muted-foreground">Savings goal</span>
                       <span className="text-foreground font-medium">{Math.round(goalPct)}%</span>
                     </div>
-                    <div className="h-[4px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+                    <div className="h-[4px] rounded-full overflow-hidden" style={{ background: "rgba(20,20,30,0.08)" }}>
                       <motion.div
                         className="h-full rounded-full"
                         initial={{ width: 0 }}
@@ -145,7 +145,7 @@ export default function DashboardPage() {
                 </div>
                 <button
                   className="px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all active:scale-95"
-                  style={{ background: A.accent, color: "hsl(var(--background))" }}
+                  style={{ background: A.accent, color: A.onAccent }}
                 >
                   Claim
                 </button>
@@ -157,7 +157,7 @@ export default function DashboardPage() {
           {!position && !valueLoading && (
             <motion.div {...fade(0.1)}>
               <GlassCard className="px-6 py-14 text-center" brackets="all">
-                <span className="mx-auto w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: "rgba(255,239,197,0.08)", border: "1px solid rgba(255,239,197,0.2)" }}>
+                <span className="mx-auto w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: "rgba(194,138,30,0.1)", border: "1px solid rgba(194,138,30,0.28)" }}>
                   <ArrowDownToLine size={20} style={{ color: A.accent }} />
                 </span>
                 <p className="text-[15px] text-foreground font-medium mb-1.5">No position yet</p>
@@ -167,7 +167,7 @@ export default function DashboardPage() {
                 <button
                   onClick={() => setDepositOpen(true)}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-[13px] font-semibold transition-all active:scale-95"
-                  style={{ background: A.accent, color: "hsl(var(--background))" }}
+                  style={{ background: A.accent, color: A.onAccent }}
                 >
                   Make your first deposit →
                 </button>
@@ -184,7 +184,7 @@ export default function DashboardPage() {
               <GlassCard className="p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(255,239,197,0.1)", border: "1px solid rgba(255,239,197,0.22)" }}>
+                    <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.28)" }}>
                       <ShieldCheck size={14} style={{ color: A.accent }} />
                     </span>
                     <p className="text-[14px] font-semibold text-foreground">Axiom</p>
@@ -228,13 +228,13 @@ export default function DashboardPage() {
 function QuickAction({ href, onClick, icon, label, primary }: { href?: string; onClick?: () => void; icon: React.ReactNode; label: string; primary?: boolean }) {
   const className = "flex flex-col items-center justify-center gap-2 py-4 rounded-xl transition-all active:scale-95";
   const style = {
-    background: primary ? "rgba(255,239,197,0.1)" : A.subtle,
-    border: `1px solid ${primary ? "rgba(255,239,197,0.2)" : A.hairline}`,
+    background: primary ? "rgba(194,138,30,0.12)" : A.subtle,
+    border: `1px solid ${primary ? "rgba(194,138,30,0.3)" : A.hairline}`,
   };
   const inner = (
     <>
-      <span style={{ color: primary ? A.accent : "rgba(255,255,255,0.7)" }}>{icon}</span>
-      <span className="text-[11.5px] font-medium" style={{ color: primary ? A.accent : "rgba(255,255,255,0.7)" }}>{label}</span>
+      <span style={{ color: primary ? A.accent : "rgba(20,20,30,0.65)" }}>{icon}</span>
+      <span className="text-[11.5px] font-medium" style={{ color: primary ? A.accent : "rgba(20,20,30,0.65)" }}>{label}</span>
     </>
   );
 
