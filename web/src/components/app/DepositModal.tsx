@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowDownToLine, Check, X, Droplets } from "lucide-react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { ArrowDownToLine, Check, X, Droplets, AlertCircle } from "lucide-react";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from "wagmi";
 import { A } from "@/components/app/ui";
 import { useTokenBalances } from "@/hooks/useVault";
 import { ADDRESSES, VAULT_ABI, ERC20_ABI, IS_TESTNET } from "@/lib/contracts";
+import { mantleTestnet } from "@/lib/wagmi";
 import { formatUnits, parseUnits } from "viem";
 
 type Token = "USDY" | "mETH";
@@ -21,11 +22,14 @@ const QUICK_AMOUNTS = [100, 500, 1000];
 type Status = "input" | "approving" | "depositing" | "done" | "fauceting";
 
 export function DepositModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { address } = useAccount();
+  const { address, chain } = useAccount();
+  const chainId = useChainId();
+  const { switchChainAsync } = useSwitchChain();
   const [token, setToken] = useState<Token>("USDY");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState<Status>("input");
   const [hash, setHash] = useState<`0x${string}` | undefined>();
+  const [error, setError] = useState<string | null>(null);
 
   const { usdyFormatted, methFormatted } = useTokenBalances();
   const balance = token === "USDY" ? usdyFormatted : methFormatted;
@@ -33,12 +37,15 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
   const { writeContractAsync } = useWriteContract();
   const { isLoading: txPending } = useWaitForTransactionReceipt({ hash });
 
+  const wrongChain = IS_TESTNET ? chainId !== 5003 : chainId !== 5000;
+
   useEffect(() => {
     if (!open) {
       const t = setTimeout(() => {
         setAmount("");
         setStatus("input");
         setHash(undefined);
+        setError(null);
       }, 300);
       return () => clearTimeout(t);
     }
@@ -49,8 +56,26 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
   const tokenInfo = TOKENS[token];
   const parsedAmount = valid ? parseUnits(amount, tokenInfo.decimals) : 0n;
 
+  async function ensureCorrectChain() {
+    if (wrongChain) {
+      try {
+        await switchChainAsync({ chainId: IS_TESTNET ? 5003 : 5000 });
+        return true;
+      } catch {
+        setError("Please switch to Mantle Testnet in MetaMask");
+        return false;
+      }
+    }
+    return true;
+  }
+
   async function handleFaucet() {
     if (!address) return;
+    setError(null);
+
+    const ok = await ensureCorrectChain();
+    if (!ok) return;
+
     try {
       setStatus("fauceting");
       const hash = await writeContractAsync({
@@ -60,15 +85,20 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
         args: [address, parseUnits("1000", tokenInfo.decimals)],
       });
       setHash(hash);
-      await new Promise((r) => setTimeout(r, 2000));
-      setStatus("input");
-    } catch {
+    } catch (err: any) {
+      console.error("Faucet error:", err);
+      const msg = err?.shortMessage ?? err?.message ?? "Transaction failed";
+      setError(msg.includes("User rejected") ? "Transaction rejected" : msg.slice(0, 100));
       setStatus("input");
     }
   }
 
   async function handleDeposit() {
     if (!valid || !address) return;
+    setError(null);
+
+    const ok = await ensureCorrectChain();
+    if (!ok) return;
 
     try {
       setStatus("approving");
@@ -95,7 +125,10 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
 
       setHash(depositHash);
       setStatus("done");
-    } catch {
+    } catch (err: any) {
+      console.error("Deposit error:", err);
+      const msg = err?.shortMessage ?? err?.message ?? "Transaction failed";
+      setError(msg.includes("User rejected") ? "Transaction rejected" : msg.slice(0, 100));
       setStatus("input");
       setHash(undefined);
     }
@@ -174,6 +207,39 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
                       <X size={16} />
                     </button>
                   </div>
+
+                  {/* Wrong chain warning */}
+                  {wrongChain && (
+                    <div
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl mb-4 text-[12.5px]"
+                      style={{ background: "rgba(255,180,50,0.1)", border: "1px solid rgba(255,180,50,0.25)", color: "#b48a00" }}
+                    >
+                      <AlertCircle size={14} />
+                      <span>Switch to Mantle Testnet in MetaMask</span>
+                      <button
+                        onClick={async () => {
+                          try { await switchChainAsync({ chainId: 5003 }); } catch {}
+                        }}
+                        className="ml-auto font-semibold underline"
+                      >
+                        Switch
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Error */}
+                  {error && (
+                    <div
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl mb-4 text-[12.5px]"
+                      style={{ background: "rgba(220,60,60,0.08)", border: "1px solid rgba(220,60,60,0.2)", color: "hsl(var(--destructive))" }}
+                    >
+                      <AlertCircle size={14} />
+                      <span className="flex-1 truncate">{error}</span>
+                      <button onClick={() => setError(null)} className="shrink-0">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  )}
 
                   {/* Token selector */}
                   <div className="flex gap-2 mb-4">
@@ -269,19 +335,19 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
                     {status === "approving" && (
                       <>
                         <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                        Approving {token}…
+                        Approving {token}...
                       </>
                     )}
                     {status === "depositing" && (
                       <>
                         <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                        Depositing…
+                        Depositing...
                       </>
                     )}
                     {status === "fauceting" && (
                       <>
                         <span className="h-3.5 w-3.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                        Minting test tokens…
+                        Minting test tokens...
                       </>
                     )}
                     {status === "input" && "Confirm deposit"}

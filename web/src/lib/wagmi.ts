@@ -30,10 +30,10 @@ export const mantleTestnet = defineChain({
 });
 
 export const config = createConfig({
-  chains: [mantle, mantleTestnet],
+  chains: [mantleTestnet, mantle],
   connectors: [injected()],
   transports: {
-    [mantle.id]: http(),
-    [mantleTestnet.id]: http(),
+    [mantleTestnet.id]: http(undefined, { retryCount: 3, retryDelay: 1500 }),
+    [mantle.id]: http(undefined, { retryCount: 3, retryDelay: 1500 }),
   },
 });
