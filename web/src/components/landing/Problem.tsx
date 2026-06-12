@@ -30,7 +30,7 @@ export function Problem() {
             <Reveal key={s.n} delay={i * 0.08}>
               <div
                 className="relative h-full p-5 sm:p-6 rounded-xl overflow-hidden"
-                style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}
+                style={{ background: "rgba(20,20,30,0.04)", border: "1px solid rgba(20,20,30,0.08)" }}
               >
                 <span className="absolute top-0 left-0 w-3 h-3" style={{ borderTop: `1.5px solid ${T.bracket}`, borderLeft: `1.5px solid ${T.bracket}` }} />
                 <span className="absolute bottom-0 right-0 w-3 h-3" style={{ borderBottom: `1.5px solid ${T.bracket}`, borderRight: `1.5px solid ${T.bracket}` }} />
