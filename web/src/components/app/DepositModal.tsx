@@ -51,14 +51,14 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
           {/* Scrim */}
           <div
             className="absolute inset-0"
-            style={{ background: "rgba(4,4,10,0.7)", backdropFilter: "blur(4px)" }}
+            style={{ background: "rgba(20,20,30,0.35)", backdropFilter: "blur(4px)" }}
             onClick={status === "processing" ? undefined : onClose}
           />
 
           {/* Sheet */}
           <motion.div
             className="relative w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden"
-            style={{ background: "#0c0c16", border: `1px solid ${A.cardBorder}`, boxShadow: "0 -8px 60px rgba(0,0,0,0.6)" }}
+            style={{ background: "#FFFFFF", border: `1px solid ${A.cardBorder}`, boxShadow: "0 -8px 60px rgba(20,20,30,0.18)" }}
             initial={{ y: 40, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 40, opacity: 0, scale: 0.98 }}
@@ -67,7 +67,7 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
             {/* glow */}
             <div
               className="absolute inset-x-0 top-0 h-40 pointer-events-none"
-              style={{ background: "radial-gradient(ellipse 70% 100% at 50% 0%, rgba(255,239,197,0.1) 0%, transparent 70%)" }}
+              style={{ background: "radial-gradient(ellipse 70% 100% at 50% 0%, rgba(255,205,90,0.18) 0%, transparent 70%)" }}
             />
 
             <AnimatePresence mode="wait">
@@ -97,7 +97,7 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
                     <div className="flex items-center gap-2.5">
                       <span
                         className="w-9 h-9 rounded-xl flex items-center justify-center"
-                        style={{ background: "rgba(255,239,197,0.1)", border: "1px solid rgba(255,239,197,0.22)" }}
+                        style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.28)" }}
                       >
                         <ArrowDownToLine size={16} style={{ color: A.accent }} />
                       </span>
@@ -118,7 +118,7 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
 
                   {/* Amount field */}
                   <div className="flex items-center gap-2 border-b pb-3 mb-3" style={{ borderColor: A.cardBorder }}>
-                    <span className="text-[1.6rem] font-light" style={{ color: "rgba(255,255,255,0.35)" }}>$</span>
+                    <span className="text-[1.6rem] font-light" style={{ color: "rgba(20,20,30,0.35)" }}>$</span>
                     <input
                       type="number"
                       inputMode="decimal"
@@ -126,7 +126,7 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                       disabled={status === "processing"}
-                      className="flex-1 bg-transparent text-[2.4rem] font-light text-foreground outline-none placeholder:text-white/15 disabled:opacity-60"
+                      className="flex-1 bg-transparent text-[2.4rem] font-light text-foreground outline-none placeholder:text-black/15 disabled:opacity-60"
                       autoFocus
                     />
                   </div>
@@ -151,7 +151,7 @@ export function DepositModal({ open, onClose }: { open: boolean; onClose: () => 
                     onClick={confirm}
                     disabled={!valid || status === "processing"}
                     className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[14px] font-semibold transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none"
-                    style={{ background: A.accent, color: "hsl(var(--background))" }}
+                    style={{ background: A.accent, color: A.onAccent }}
                   >
                     {status === "processing" ? (
                       <>
