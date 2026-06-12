@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 
-const client = new Anthropic();
+const NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
+const NVIDIA_MODEL = "meta/llama-3.1-8b-instruct";
 
 const SYSTEM = `You are Axiom, an autonomous AI savings guardian built on Mantle L2. You manage users' USDY (Ondo Finance RWA stablecoin, ~4.5% APY) and mETH (Mantle Liquid Staking Token, ~3.8% APY) savings.
 
@@ -28,29 +28,39 @@ export async function POST(req: NextRequest) {
       ? `[User wallet: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}]`
       : "";
 
-    const anthropicMessages = messages.map(
+    const chatMessages = messages.map(
       (m: { role: string; content: string }) => ({
-        role: m.role as "user" | "assistant",
+        role: m.role,
         content: m.content,
       })
     );
 
-    if (contextNote && anthropicMessages[0]?.role === "user") {
-      anthropicMessages[0] = {
+    if (contextNote && chatMessages[0]?.role === "user") {
+      chatMessages[0] = {
         role: "user",
-        content: `${contextNote}\n\n${anthropicMessages[0].content}`,
+        content: `${contextNote}\n\n${chatMessages[0].content}`,
       };
     }
 
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 512,
-      system: SYSTEM,
-      messages: anthropicMessages,
+    const response = await fetch(`${NVIDIA_BASE_URL}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: NVIDIA_MODEL,
+        max_tokens: 512,
+        messages: [{ role: "system", content: SYSTEM }, ...chatMessages],
+      }),
     });
 
-    const content =
-      response.content[0].type === "text" ? response.content[0].text : "";
+    if (!response.ok) {
+      throw new Error(`Nvidia NIM API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content ?? "";
 
     return NextResponse.json({ content });
   } catch (error) {
