@@ -6,39 +6,40 @@
 
 @layer base {
   :root {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
+    /* ── Light theme — warm off-white + gold ───────────────────────────────── */
+    --background: 45 33% 98%;          /* #FBFAF6 warm off-white */
+    --foreground: 240 9% 10%;          /* #17171A near-black */
 
-    --surface: 240 8% 7%;
-    --surface-elevated: 240 6% 10%;
+    --surface: 0 0% 100%;
+    --surface-elevated: 45 25% 96%;
 
-    --card: 240 8% 7%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 9% 10%;
 
-    --primary: 45 100% 88%;
-    --primary-foreground: 240 10% 4%;
+    --primary: 38 75% 44%;             /* #C28A1E deep gold */
+    --primary-foreground: 40 38% 12%;  /* dark warm text on gold */
 
-    --secondary: 240 4% 14%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 45 16% 92%;
+    --secondary-foreground: 240 9% 10%;
 
-    --muted: 240 4% 14%;
-    --muted-foreground: 240 5% 55%;
+    --muted: 45 16% 92%;
+    --muted-foreground: 240 5% 40%;    /* readable gray on light */
 
-    --accent: 45 100% 88%;
-    --accent-foreground: 240 10% 4%;
+    --accent: 38 75% 44%;              /* deep gold */
+    --accent-foreground: 40 38% 12%;   /* dark warm text on gold */
 
-    --border: 240 4% 16%;
-    --border-subtle: 240 4% 10%;
+    --border: 240 6% 87%;
+    --border-subtle: 240 6% 92%;
 
-    --input: 240 4% 16%;
-    --ring: 45 100% 88%;
+    --input: 240 6% 87%;
+    --ring: 38 75% 44%;
 
-    --positive: 142 72% 55%;
-    --warning: 25 95% 60%;
-    --protective: 213 94% 68%;
+    --positive: 142 58% 36%;           /* darker green for white-bg contrast */
+    --warning: 28 88% 44%;
+    --protective: 213 80% 48%;
 
-    --destructive: 0 63% 55%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 70% 47%;
+    --destructive-foreground: 0 0% 100%;
 
     --radius: 0.5rem;
   }
