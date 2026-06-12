@@ -11,15 +11,16 @@ export function Navbar() {
         <nav
           className="flex items-center justify-between px-4 h-12 rounded-xl"
           style={{
-            background: "rgba(8,8,16,0.92)",
+            background: "rgba(255,255,255,0.9)",
             backdropFilter: "blur(16px)",
-            border: "1px solid rgba(255,255,255,0.07)",
+            border: "1px solid rgba(20,20,30,0.1)",
+            boxShadow: "0 4px 20px rgba(20,20,30,0.06)",
           }}
         >
           <div className="flex items-center gap-2">
             <div
               className="w-5 h-5 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(255,239,197,0.1)", border: "1px solid rgba(255,239,197,0.3)" }}
+              style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.4)" }}
             >
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: T.accent }} />
             </div>
@@ -43,7 +44,7 @@ export function Navbar() {
             <Link
               href="/onboard"
               className="relative text-[12px] font-semibold px-4 py-1.5 rounded-lg transition-all active:scale-95"
-              style={{ background: "rgba(255,239,197,0.1)", border: "1px solid rgba(255,239,197,0.22)", color: T.accent }}
+              style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.32)", color: T.accent }}
             >
               <span className="absolute top-0 left-0 w-2.5 h-2.5" style={{ borderTop: `1.5px solid ${T.bracket}`, borderLeft: `1.5px solid ${T.bracket}` }} />
               <span className="absolute top-0 right-0 w-2.5 h-2.5" style={{ borderTop: `1.5px solid ${T.bracket}`, borderRight: `1.5px solid ${T.bracket}` }} />
