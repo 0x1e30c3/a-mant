@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowDownToLine, Sparkles, ArrowUpRight, ShieldCheck, Coins, ScrollText } from "lucide-react";
+import { ArrowDownToLine, ArrowUpRight, ShieldCheck, Coins } from "lucide-react";
 import { GlassCard, Pill, SectionLabel, LiveDot, A } from "@/components/app/ui";
 import { DepositModal } from "@/components/app/DepositModal";
 import { useTotalValue, useVaultPosition, usePendingYield } from "@/hooks/useVault";
@@ -104,10 +104,15 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Quick actions */}
-          <motion.div {...fade(0.06)} className="grid grid-cols-3 gap-2.5">
-            <QuickAction onClick={() => setDepositOpen(true)} icon={<ArrowDownToLine size={16} />} label="Deposit" primary />
-            <QuickAction href="/app/chronicle" icon={<ScrollText size={16} />} label="Chronicle" />
-            <QuickAction href="/app/chat" icon={<Sparkles size={16} />} label="Ask Axiom" />
+          <motion.div {...fade(0.06)}>
+            <button
+              onClick={() => setDepositOpen(true)}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl transition-all active:scale-[0.98]"
+              style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.3)" }}
+            >
+              <ArrowDownToLine size={16} style={{ color: A.accent }} />
+              <span className="text-[13px] font-semibold" style={{ color: A.accent }}>Deposit</span>
+            </button>
           </motion.div>
 
           {/* Allocation */}
@@ -225,33 +230,6 @@ export default function DashboardPage() {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function QuickAction({ href, onClick, icon, label, primary }: { href?: string; onClick?: () => void; icon: React.ReactNode; label: string; primary?: boolean }) {
-  const className = "flex flex-col items-center justify-center gap-2 py-4 rounded-xl transition-all active:scale-95";
-  const style = {
-    background: primary ? "rgba(194,138,30,0.12)" : A.subtle,
-    border: `1px solid ${primary ? "rgba(194,138,30,0.3)" : A.hairline}`,
-  };
-  const inner = (
-    <>
-      <span style={{ color: primary ? A.accent : "rgba(20,20,30,0.65)" }}>{icon}</span>
-      <span className="text-[11.5px] font-medium" style={{ color: primary ? A.accent : "rgba(20,20,30,0.65)" }}>{label}</span>
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link href={href} className={className} style={style}>
-        {inner}
-      </Link>
-    );
-  }
-  return (
-    <button onClick={onClick} className={className} style={style}>
-      {inner}
-    </button>
-  );
-}
-
 function AllocCard({ dot, label, sub, value }: { dot: string; label: string; sub: string; value: string }) {
   return (
     <GlassCard className="p-5">
