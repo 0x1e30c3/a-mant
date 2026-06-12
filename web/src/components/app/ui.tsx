@@ -5,22 +5,23 @@ import { cn } from "@/lib/utils";
 // ─── Shared app design tokens (aligned with the landing design language) ──────
 export const A = {
   accent: "hsl(var(--accent))",
-  bracket: "rgba(255,239,197,0.28)",
-  cardBg: "linear-gradient(160deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.016) 100%)",
-  cardBorder: "rgba(255,255,255,0.08)",
-  subtle: "rgba(255,255,255,0.022)",
-  hairline: "rgba(255,255,255,0.06)",
+  onAccent: "hsl(var(--accent-foreground))",
+  bracket: "rgba(194,138,30,0.4)",
+  cardBg: "#FFFFFF",
+  cardBorder: "rgba(20,20,30,0.1)",
+  subtle: "rgba(20,20,30,0.025)",
+  hairline: "rgba(20,20,30,0.08)",
 };
 
 // ─── Page atmosphere — fixed grid + amber glow behind everything ──────────────
 export function AppBackdrop() {
   return (
-    <div className="fixed inset-0 -z-10 pointer-events-none" style={{ background: "#080810" }}>
+    <div className="fixed inset-0 -z-10 pointer-events-none" style={{ background: "hsl(var(--background))" }}>
       <div
         className="absolute inset-0"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,239,197,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,239,197,0.025) 1px, transparent 1px)",
+            "linear-gradient(rgba(194,138,30,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(194,138,30,0.05) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
           maskImage: "radial-gradient(ellipse 80% 50% at 50% 0%, black 0%, transparent 80%)",
           WebkitMaskImage: "radial-gradient(ellipse 80% 50% at 50% 0%, black 0%, transparent 80%)",
@@ -28,7 +29,7 @@ export function AppBackdrop() {
       />
       <div
         className="absolute inset-x-0 top-0 h-[420px]"
-        style={{ background: "radial-gradient(ellipse 60% 100% at 50% 0%, rgba(255,239,197,0.07) 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(ellipse 60% 100% at 50% 0%, rgba(255,205,90,0.16) 0%, transparent 70%)" }}
       />
     </div>
   );
@@ -71,7 +72,9 @@ export function GlassCard({
       style={{
         background: A.cardBg,
         border: `1px solid ${A.cardBorder}`,
-        ...(glow ? { boxShadow: "0 0 60px rgba(255,239,197,0.06)" } : {}),
+        boxShadow: glow
+          ? "0 1px 2px rgba(20,20,30,0.04), 0 8px 30px rgba(194,138,30,0.1)"
+          : "0 1px 2px rgba(20,20,30,0.04), 0 1px 3px rgba(20,20,30,0.05)",
         ...style,
       }}
     >
@@ -84,10 +87,10 @@ export function GlassCard({
 // ─── Status pill ──────────────────────────────────────────────────────────────
 type Tone = "positive" | "warning" | "accent" | "neutral";
 const TONES: Record<Tone, { color: string; bg: string; border: string }> = {
-  positive: { color: "hsl(var(--positive))", bg: "rgba(64,200,120,0.08)", border: "rgba(64,200,120,0.22)" },
-  warning: { color: "hsl(var(--warning))", bg: "rgba(250,140,50,0.08)", border: "rgba(250,140,50,0.22)" },
-  accent: { color: "hsl(var(--accent))", bg: "rgba(255,239,197,0.08)", border: "rgba(255,239,197,0.2)" },
-  neutral: { color: "rgba(255,255,255,0.55)", bg: "rgba(255,255,255,0.04)", border: "rgba(255,255,255,0.1)" },
+  positive: { color: "hsl(var(--positive))", bg: "rgba(36,160,90,0.1)", border: "rgba(36,160,90,0.25)" },
+  warning: { color: "hsl(var(--warning))", bg: "rgba(220,120,30,0.1)", border: "rgba(220,120,30,0.25)" },
+  accent: { color: "hsl(var(--accent))", bg: "rgba(194,138,30,0.1)", border: "rgba(194,138,30,0.28)" },
+  neutral: { color: "rgba(20,20,30,0.55)", bg: "rgba(20,20,30,0.05)", border: "rgba(20,20,30,0.12)" },
 };
 
 export function Pill({
@@ -113,7 +116,7 @@ export function Pill({
 // ─── Section label — uppercase eyebrow ────────────────────────────────────────
 export function SectionLabel({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <p className={cn("text-[10px] uppercase tracking-[0.18em]", className)} style={{ color: "rgba(255,255,255,0.3)" }}>
+    <p className={cn("text-[10px] uppercase tracking-[0.18em]", className)} style={{ color: "rgba(20,20,30,0.42)" }}>
       {children}
     </p>
   );
