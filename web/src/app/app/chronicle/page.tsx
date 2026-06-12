@@ -63,7 +63,7 @@ export default function ChroniclePage() {
   const sorted = [...chapters].reverse();
 
   return (
-    <div className="px-4 sm:px-6 pt-6">
+    <div className="pt-6 max-w-3xl">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <SectionLabel className="mb-2">Your savings story</SectionLabel>
         <h1 className="text-[1.8rem] font-light tracking-tight text-foreground leading-tight">Chronicle</h1>
