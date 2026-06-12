@@ -6,11 +6,11 @@ import { cn } from "@/lib/utils";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 export const T = {
-  bracket: "rgba(255,239,197,0.28)",
-  rail: "rgba(255,239,197,0.07)",
-  sep: "rgba(255,239,197,0.07)",
-  innerBorder: "rgba(255,255,255,0.05)",
-  cardBg: "rgba(255,255,255,0.022)",
+  bracket: "rgba(194,138,30,0.4)",
+  rail: "rgba(194,138,30,0.14)",
+  sep: "rgba(194,138,30,0.14)",
+  innerBorder: "rgba(20,20,30,0.06)",
+  cardBg: "rgba(194,138,30,0.035)",
   accent: "hsl(var(--accent))",
 };
 
@@ -122,7 +122,7 @@ export function SectionHeading({
     <div className={cn("max-w-2xl", className)}>
       <div className="flex items-center gap-2 mb-4">
         {live && <span className="w-1.5 h-1.5 rounded-full bg-positive animate-pulse" />}
-        <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.28)" }}>
+        <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(20,20,30,0.4)" }}>
           {eyebrow}
         </p>
       </div>
@@ -155,7 +155,7 @@ export function ShimmerButton({
         "relative overflow-hidden flex items-center justify-center gap-2 py-4 rounded-xl text-[14px] font-semibold transition-all active:scale-[0.98]",
         className
       )}
-      style={{ background: T.accent, color: "hsl(var(--background))" }}
+      style={{ background: T.accent, color: "hsl(var(--accent-foreground))" }}
     >
       <motion.span
         animate={{ x: ["-120%", "220%"] }}
@@ -188,7 +188,7 @@ export function GhostButton({
         "flex items-center justify-center py-4 rounded-xl text-[13px] text-muted-foreground hover:text-foreground transition-colors",
         className
       )}
-      style={{ border: "1px solid rgba(255,255,255,0.07)" }}
+      style={{ border: "1px solid rgba(20,20,30,0.12)" }}
     >
       {children}
     </Link>
