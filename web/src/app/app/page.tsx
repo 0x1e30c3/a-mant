@@ -133,6 +133,11 @@ export default function DashboardPage() {
             </motion.div>
           )}
 
+          {/* Growth projection chart */}
+          <motion.div {...fade(0.18)}>
+            <GrowthChart principal={parseFloat(totalFormatted)} />
+          </motion.div>
+
           {/* Claimable yield */}
           {hasYield && (
             <motion.div {...fade(0.16)}>
@@ -351,5 +356,136 @@ function Metric({ label, value }: { label: string; value: string }) {
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
       <p className="text-[13px] text-foreground font-medium">{value}</p>
     </div>
+  );
+}
+
+// ─── Growth projection chart ───────────────────────────────────────────────────
+function GrowthChart({ principal }: { principal: number }) {
+  const BLENDED_APY = 0.043; // ~4.3% blended (USDY 4.5% + mETH 3.8%)
+  const MONTHS = 12;
+  const W = 480;
+  const H = 120;
+  const PAD = { top: 12, right: 8, bottom: 24, left: 44 };
+
+  const base = principal > 0 ? principal : 100;
+
+  // Generate monthly compound data points
+  const points = Array.from({ length: MONTHS + 1 }, (_, i) => ({
+    month: i,
+    value: base * Math.pow(1 + BLENDED_APY / 12, i),
+  }));
+
+  const minVal = points[0].value;
+  const maxVal = points[MONTHS].value;
+  const range = maxVal - minVal || 1;
+
+  const toX = (i: number) =>
+    PAD.left + (i / MONTHS) * (W - PAD.left - PAD.right);
+  const toY = (v: number) =>
+    PAD.top + (1 - (v - minVal) / range) * (H - PAD.top - PAD.bottom);
+
+  // SVG polyline path
+  const linePath = points
+    .map((p, i) => `${i === 0 ? "M" : "L"}${toX(p.month).toFixed(1)},${toY(p.value).toFixed(1)}`)
+    .join(" ");
+
+  // Area fill path (close to bottom)
+  const areaPath =
+    linePath +
+    ` L${toX(MONTHS).toFixed(1)},${(H - PAD.bottom).toFixed(1)} L${toX(0).toFixed(1)},${(H - PAD.bottom).toFixed(1)} Z`;
+
+  const gain = maxVal - base;
+  const gainPct = ((gain / base) * 100).toFixed(2);
+
+  // X-axis labels: every 3 months
+  const xLabels = [0, 3, 6, 9, 12];
+  const monthNames = ["Now", "3m", "6m", "9m", "1yr"];
+
+  const fmtShort = (n: number) =>
+    n >= 1000
+      ? `$${(n / 1000).toFixed(1)}k`
+      : `$${n.toFixed(n < 10 ? 2 : 0)}`;
+
+  return (
+    <GlassCard className="p-5">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <SectionLabel>Projected growth</SectionLabel>
+          <p className="text-[11px] text-muted-foreground mt-0.5">12-month · blended {(BLENDED_APY * 100).toFixed(1)}% APY</p>
+        </div>
+        <div className="text-right">
+          <p className="text-[18px] font-light text-foreground leading-none">{fmtShort(maxVal)}</p>
+          <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--positive))" }}>+{gainPct}% · +{fmtShort(gain)}</p>
+        </div>
+      </div>
+
+      {/* SVG chart */}
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full"
+        style={{ height: H, overflow: "visible" }}
+        aria-label={`Portfolio growth projection over 12 months`}
+      >
+        <defs>
+          <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="rgb(194,138,30)" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="rgb(194,138,30)" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="chartLine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="rgba(194,138,30,0.5)" />
+            <stop offset="100%" stopColor="rgba(194,138,30,1)" />
+          </linearGradient>
+        </defs>
+
+        {/* Horizontal grid lines */}
+        {[0, 0.5, 1].map((t) => {
+          const y = PAD.top + t * (H - PAD.top - PAD.bottom);
+          const val = maxVal - t * range;
+          return (
+            <g key={t}>
+              <line
+                x1={PAD.left} y1={y} x2={W - PAD.right} y2={y}
+                stroke="rgba(20,20,30,0.07)" strokeWidth="1" strokeDasharray="3 3"
+              />
+              <text
+                x={PAD.left - 6} y={y + 4}
+                textAnchor="end"
+                fontSize="9"
+                fill="rgba(20,20,30,0.35)"
+              >
+                {fmtShort(val)}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Area fill */}
+        <path d={areaPath} fill="url(#chartFill)" />
+
+        {/* Line */}
+        <path d={linePath} fill="none" stroke="url(#chartLine)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* End dot */}
+        <circle
+          cx={toX(MONTHS)} cy={toY(maxVal)}
+          r="3.5"
+          fill={A.accent}
+          stroke="white" strokeWidth="1.5"
+        />
+
+        {/* X-axis labels */}
+        {xLabels.map((m, i) => (
+          <text
+            key={m}
+            x={toX(m)} y={H - 4}
+            textAnchor="middle"
+            fontSize="9"
+            fill="rgba(20,20,30,0.35)"
+          >
+            {monthNames[i]}
+          </text>
+        ))}
+      </svg>
+    </GlassCard>
   );
 }
