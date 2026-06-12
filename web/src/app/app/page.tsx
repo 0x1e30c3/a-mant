@@ -3,14 +3,23 @@
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+import { ArrowDownToLine, Sparkles, ArrowUpRight, ShieldCheck, Coins, ScrollText } from "lucide-react";
+import { GlassCard, Pill, SectionLabel, LiveDot, A } from "@/components/app/ui";
 import { useTotalValue, useVaultPosition, usePendingYield } from "@/hooks/useVault";
 import { useAgentProfile, useChapters } from "@/hooks/useAgent";
 import { CHAPTER_TYPE_LABELS, RISK_LABELS, RiskMode } from "@/types";
 import { formatUnits } from "viem";
+
+const fade = (delay = 0) => ({
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] as const },
+});
+
+const fmt = (n: string) =>
+  parseFloat(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export default function DashboardPage() {
   const { isConnected } = useAccount();
@@ -28,181 +37,216 @@ export default function DashboardPage() {
 
   const goalPct =
     position?.active && position.goalAmount > 0n
-      ? Math.min(
-          100,
-          (parseFloat(totalFormatted) /
-            parseFloat(formatUnits(position.goalAmount, 18))) *
-            100
-        )
+      ? Math.min(100, (parseFloat(totalFormatted) / parseFloat(formatUnits(position.goalAmount, 18))) * 100)
       : 0;
 
-  const fmt = (n: string) =>
-    parseFloat(n).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+  const hasYield = parseFloat(yieldFormatted) > 0;
 
   return (
-    <div className="px-5 py-8 space-y-8 sm:px-8">
-      {/* Hero: total value */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="space-y-1"
-      >
-        <p className="text-xs text-muted-foreground uppercase tracking-widest">
-          Portfolio value
-        </p>
-        <div className="text-5xl font-light text-foreground">
-          {valueLoading ? (
-            <span className="text-border">—</span>
-          ) : (
-            <>
-              <span className="text-muted-foreground text-2xl mr-1">$</span>
-              {fmt(totalFormatted)}
-            </>
-          )}
-        </div>
-
-        {position?.active && position.goalAmount > 0n && (
-          <div className="pt-3 space-y-2">
-            <Progress value={goalPct} />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{Math.round(goalPct)}% to goal</span>
-              <span>${fmt(formatUnits(position.goalAmount, 18))}</span>
+    <div className="px-4 sm:px-6 pt-6 space-y-4">
+      {/* ── Balance hero ── */}
+      <motion.div {...fade(0)}>
+        <GlassCard glow className="p-6" brackets="all">
+          {/* atmosphere */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse 70% 80% at 80% 0%, rgba(255,239,197,0.08) 0%, transparent 60%)" }}
+          />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-3">
+              <SectionLabel>Portfolio value</SectionLabel>
+              <Pill tone="positive">
+                <LiveDot /> Live
+              </Pill>
             </div>
+
+            <div className="text-[3.25rem] leading-none font-light tracking-tight text-foreground">
+              {valueLoading ? (
+                <span style={{ color: "rgba(255,255,255,0.15)" }}>—</span>
+              ) : (
+                <>
+                  <span className="text-[1.6rem] align-top mr-1" style={{ color: "rgba(255,255,255,0.35)" }}>$</span>
+                  {fmt(totalFormatted)}
+                </>
+              )}
+            </div>
+
+            {/* Goal progress */}
+            {position?.active && position.goalAmount > 0n && (
+              <div className="mt-6">
+                <div className="flex items-center justify-between text-[11px] mb-2">
+                  <span className="text-muted-foreground">Savings goal</span>
+                  <span className="text-foreground font-medium">{Math.round(goalPct)}%</span>
+                </div>
+                <div className="h-[4px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+                  <motion.div
+                    className="h-full rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${goalPct}%` }}
+                    transition={{ duration: 0.9, ease: "easeOut", delay: 0.2 }}
+                    style={{ background: "linear-gradient(90deg, hsl(var(--accent)) 0%, rgba(255,190,60,0.5) 100%)" }}
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  ${fmt(totalFormatted)} of ${fmt(formatUnits(position.goalAmount, 18))}
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </GlassCard>
       </motion.div>
 
-      {/* Allocation split */}
+      {/* ── Quick actions ── */}
+      <motion.div {...fade(0.06)} className="grid grid-cols-3 gap-2.5">
+        <QuickAction href="/onboard" icon={<ArrowDownToLine size={16} />} label="Deposit" primary />
+        <QuickAction href="/app/chronicle" icon={<ScrollText size={16} />} label="Chronicle" />
+        <QuickAction href="/app/chat" icon={<Sparkles size={16} />} label="Ask Axiom" />
+      </motion.div>
+
+      {/* ── Allocation ── */}
       {position && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.08 }}
-          className="grid grid-cols-2 gap-3"
-        >
-          <Card className="space-y-1">
-            <p className="text-xs text-muted-foreground">USDY</p>
-            <p className="text-xl font-light text-foreground">
-              {fmt(formatUnits(position.usdyAmount, 18))}
-            </p>
-            <p className="text-xs text-positive">~4.5% APY</p>
-          </Card>
-          <Card className="space-y-1">
-            <p className="text-xs text-muted-foreground">mETH</p>
-            <p className="text-xl font-light text-foreground">
-              {parseFloat(formatUnits(position.methAmount, 18)).toLocaleString(
-                "en-US",
-                { minimumFractionDigits: 4, maximumFractionDigits: 4 }
-              )}
-            </p>
-            <p className="text-xs text-positive">~3.8% APY</p>
-          </Card>
+        <motion.div {...fade(0.12)} className="grid grid-cols-2 gap-2.5">
+          <AllocCard
+            dot={A.accent}
+            label="USDY"
+            sub="Treasury · 4.5% APY"
+            value={`$${fmt(formatUnits(position.usdyAmount, 18))}`}
+          />
+          <AllocCard
+            dot="hsl(var(--protective))"
+            label="mETH"
+            sub="Staking · 3.8% APY"
+            value={parseFloat(formatUnits(position.methAmount, 18)).toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
+          />
         </motion.div>
       )}
 
-      {/* Claimable yield */}
-      {parseFloat(yieldFormatted) > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.14 }}
-        >
-          <Card accent="positive" className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Claimable yield</p>
-              <p className="text-base font-medium text-positive mt-0.5">
-                +${parseFloat(yieldFormatted).toFixed(4)}
-              </p>
-            </div>
-            <Button size="sm" variant="secondary">
-              Claim
-            </Button>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* AI status */}
-      {hasAgent && profile && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <Card className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-positive" />
-                <p className="text-sm font-medium text-foreground">Axiom</p>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {profile.totalDecisions.toString()} decisions
-              </p>
-            </div>
-            <div className="grid grid-cols-3 gap-3 pt-1">
-              <div>
-                <p className="text-xs text-muted-foreground">Risk mode</p>
-                <p className="text-sm text-foreground mt-0.5">
-                  {RISK_LABELS[(position?.riskMode ?? 0) as RiskMode]}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Reputation</p>
-                <p className="text-sm text-foreground mt-0.5">
-                  {profile.reputationScore.toString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total impact</p>
-                <p className="text-sm text-foreground mt-0.5">
-                  ${parseFloat(formatUnits(profile.totalImpact, 18)).toFixed(2)}
-                </p>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Latest chapter */}
-      {latestChapter && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.26 }}
-        >
-          <Card className="space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">Latest chapter</p>
-              <span className="text-xs text-muted-foreground px-2 py-0.5 bg-background rounded-full border border-border">
-                {CHAPTER_TYPE_LABELS[latestChapter.chapterType]}
+      {/* ── Claimable yield ── */}
+      {hasYield && (
+        <motion.div {...fade(0.16)}>
+          <GlassCard className="p-5 flex items-center justify-between" style={{ borderColor: "rgba(64,200,120,0.22)" }}>
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(64,200,120,0.1)", border: "1px solid rgba(64,200,120,0.22)" }}>
+                <Coins size={16} style={{ color: "hsl(var(--positive))" }} />
               </span>
+              <div>
+                <SectionLabel>Claimable yield</SectionLabel>
+                <p className="text-[18px] font-medium text-positive mt-0.5 leading-none">
+                  +${parseFloat(yieldFormatted).toFixed(4)}
+                </p>
+              </div>
             </div>
-            <p className="text-sm font-medium text-foreground">
-              {latestChapter.title}
-            </p>
-            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-              {latestChapter.narrative}
-            </p>
-          </Card>
+            <button
+              className="px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all active:scale-95"
+              style={{ background: A.accent, color: "hsl(var(--background))" }}
+            >
+              Claim
+            </button>
+          </GlassCard>
         </motion.div>
       )}
 
-      {/* Empty state */}
-      {!position && !valueLoading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-20 space-y-4"
-        >
-          <p className="text-muted-foreground text-sm">
-            No position yet. Make your first deposit to start.
-          </p>
-          <Button size="lg">Deposit</Button>
+      {/* ── Axiom status ── */}
+      {hasAgent && profile && (
+        <motion.div {...fade(0.2)}>
+          <GlassCard className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(255,239,197,0.1)", border: "1px solid rgba(255,239,197,0.22)" }}>
+                  <ShieldCheck size={14} style={{ color: A.accent }} />
+                </span>
+                <p className="text-[14px] font-semibold text-foreground">Axiom</p>
+              </div>
+              <Pill tone="accent">{profile.totalDecisions.toString()} decisions</Pill>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <Metric label="Risk mode" value={RISK_LABELS[(position?.riskMode ?? 0) as RiskMode]} />
+              <Metric label="Reputation" value={profile.reputationScore.toString()} />
+              <Metric label="Total impact" value={`$${parseFloat(formatUnits(profile.totalImpact, 18)).toFixed(2)}`} />
+            </div>
+          </GlassCard>
         </motion.div>
       )}
+
+      {/* ── Latest chapter ── */}
+      {latestChapter && (
+        <motion.div {...fade(0.26)}>
+          <Link href="/app/chronicle">
+            <GlassCard className="p-5 group">
+              <div className="flex items-center justify-between mb-3">
+                <SectionLabel>Latest chapter</SectionLabel>
+                <div className="flex items-center gap-2">
+                  <Pill tone="accent">{CHAPTER_TYPE_LABELS[latestChapter.chapterType]}</Pill>
+                  <ArrowUpRight size={14} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                </div>
+              </div>
+              <p className="text-[14px] font-medium text-foreground mb-1.5">{latestChapter.title}</p>
+              <p className="text-[12.5px] text-muted-foreground leading-relaxed line-clamp-3">{latestChapter.narrative}</p>
+            </GlassCard>
+          </Link>
+        </motion.div>
+      )}
+
+      {/* ── Empty state ── */}
+      {!position && !valueLoading && (
+        <motion.div {...fade(0.1)}>
+          <GlassCard className="px-6 py-14 text-center" brackets="all">
+            <span className="mx-auto w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: "rgba(255,239,197,0.08)", border: "1px solid rgba(255,239,197,0.2)" }}>
+              <ArrowDownToLine size={20} style={{ color: A.accent }} />
+            </span>
+            <p className="text-[15px] text-foreground font-medium mb-1.5">No position yet</p>
+            <p className="text-[13px] text-muted-foreground mb-6 max-w-[260px] mx-auto leading-relaxed">
+              Make your first deposit and Axiom starts working for you — automatically.
+            </p>
+            <Link
+              href="/onboard"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-[13px] font-semibold transition-all active:scale-95"
+              style={{ background: A.accent, color: "hsl(var(--background))" }}
+            >
+              Make your first deposit →
+            </Link>
+          </GlassCard>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function QuickAction({ href, icon, label, primary }: { href: string; icon: React.ReactNode; label: string; primary?: boolean }) {
+  return (
+    <Link
+      href={href}
+      className="flex flex-col items-center justify-center gap-2 py-4 rounded-xl transition-all active:scale-95"
+      style={{
+        background: primary ? "rgba(255,239,197,0.1)" : A.subtle,
+        border: `1px solid ${primary ? "rgba(255,239,197,0.2)" : A.hairline}`,
+      }}
+    >
+      <span style={{ color: primary ? A.accent : "rgba(255,255,255,0.7)" }}>{icon}</span>
+      <span className="text-[11.5px] font-medium" style={{ color: primary ? A.accent : "rgba(255,255,255,0.7)" }}>{label}</span>
+    </Link>
+  );
+}
+
+function AllocCard({ dot, label, sub, value }: { dot: string; label: string; sub: string; value: string }) {
+  return (
+    <GlassCard className="p-5">
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className="w-1.5 h-1.5 rounded-full" style={{ background: dot }} />
+        <SectionLabel>{label}</SectionLabel>
+      </div>
+      <p className="text-[22px] font-light text-foreground leading-none mb-2">{value}</p>
+      <p className="text-[11px] text-positive">{sub}</p>
+    </GlassCard>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
+      <p className="text-[13px] text-foreground font-medium">{value}</p>
     </div>
   );
 }
