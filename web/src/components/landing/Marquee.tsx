@@ -10,16 +10,16 @@ export function Marquee() {
   ];
   return (
     <SectionBlock>
-      <div className="py-4 overflow-hidden" style={{ background: "rgba(255,239,197,0.015)" }}>
+      <div className="py-4 overflow-hidden" style={{ background: "rgba(194,138,30,0.04)" }}>
         <div className="flex gap-10 whitespace-nowrap w-max animate-marquee will-change-transform">
           {[...items, ...items, ...items].map((item, i) => (
             <span
               key={i}
               className="text-[11px] sm:text-[12px] uppercase tracking-[0.18em] font-medium"
-              style={{ color: "rgba(255,239,197,0.4)" }}
+              style={{ color: "rgba(194,138,30,0.6)" }}
             >
               {item}
-              <span className="ml-10" style={{ color: "rgba(255,239,197,0.12)" }}>✦</span>
+              <span className="ml-10" style={{ color: "rgba(194,138,30,0.28)" }}>✦</span>
             </span>
           ))}
         </div>
