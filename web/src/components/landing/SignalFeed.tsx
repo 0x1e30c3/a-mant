@@ -20,9 +20,9 @@ export function SignalFeed() {
         />
 
         <Reveal delay={0.1} className="mt-10">
-          <div className="rounded-2xl overflow-hidden max-w-3xl" style={{ background: "rgba(255,255,255,0.018)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div className="rounded-2xl overflow-hidden max-w-3xl" style={{ background: "rgba(20,20,30,0.03)", border: "1px solid rgba(20,20,30,0.1)" }}>
             {signals.map((s, i) => (
-              <div key={s.label} className="flex items-center justify-between px-5 sm:px-6 py-4" style={{ borderBottom: i < signals.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+              <div key={s.label} className="flex items-center justify-between px-5 sm:px-6 py-4" style={{ borderBottom: i < signals.length - 1 ? "1px solid rgba(20,20,30,0.07)" : "none" }}>
                 <p className="text-[13px] sm:text-[14px] text-foreground">{s.label}</p>
                 <div className="flex items-center gap-2.5">
                   <p className="text-[13px] sm:text-[14px] font-medium tabular-nums text-foreground">{s.value}</p>
@@ -39,7 +39,7 @@ export function SignalFeed() {
                 </div>
               </div>
             ))}
-            <div className="px-5 sm:px-6 py-4 flex items-center justify-between" style={{ background: "rgba(255,255,255,0.015)", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+            <div className="px-5 sm:px-6 py-4 flex items-center justify-between" style={{ background: "rgba(20,20,30,0.025)", borderTop: "1px solid rgba(20,20,30,0.07)" }}>
               <p className="text-[12px] sm:text-[13px] text-muted-foreground">Decision: <span className="text-foreground font-semibold">HOLD</span></p>
               <p className="text-[11px] text-muted-foreground">All signals normal</p>
             </div>
