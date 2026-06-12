@@ -6,18 +6,18 @@ import { SectionBlock, ShimmerButton, GhostButton, Reveal, T } from "./primitive
 export function FooterCTA() {
   return (
     <SectionBlock full>
-      <div className="relative w-full flex-1 flex flex-col justify-center overflow-hidden" style={{ background: "linear-gradient(160deg, rgba(255,239,197,0.04) 0%, rgba(255,239,197,0.015) 100%)" }}>
+      <div className="relative w-full flex-1 flex flex-col justify-center overflow-hidden" style={{ background: "linear-gradient(160deg, rgba(194,138,30,0.06) 0%, rgba(194,138,30,0.04) 100%)" }}>
         {/* Glow */}
         <div
           className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[260px] pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at center bottom, rgba(255,239,197,0.08) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(ellipse at center bottom, rgba(194,138,30,0.1) 0%, transparent 70%)" }}
         />
 
         <Reveal>
           <div className="relative px-5 sm:px-8 lg:px-12 pt-20 pb-16 flex flex-col items-center text-center">
             {/* Orb */}
             <div className="relative w-10 h-10 mb-8">
-              <div className="absolute inset-0 rounded-full" style={{ background: "rgba(255,239,197,0.08)", border: "1px solid rgba(255,239,197,0.2)" }} />
+              <div className="absolute inset-0 rounded-full" style={{ background: "rgba(194,138,30,0.1)", border: "1px solid rgba(194,138,30,0.32)" }} />
               <div className="absolute inset-0 rounded-full animate-pulse" style={{ background: T.accent }} />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ background: T.accent }} />
@@ -28,7 +28,7 @@ export function FooterCTA() {
               <span className="text-foreground">Two minutes to set up. </span>
               <span
                 style={{
-                  background: "linear-gradient(135deg, hsl(var(--accent)) 0%, rgba(255,190,60,0.6) 100%)",
+                  background: "linear-gradient(135deg, #B5781A 0%, #D49A2A 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
@@ -48,12 +48,12 @@ export function FooterCTA() {
         </Reveal>
 
         {/* Ghost wordmark */}
-        <div className="px-4 text-[18vw] lg:text-[10rem] font-bold tracking-[-0.04em] leading-none select-none pointer-events-none overflow-hidden text-center" style={{ color: "rgba(255,239,197,0.04)" }}>
+        <div className="px-4 text-[18vw] lg:text-[10rem] font-bold tracking-[-0.04em] leading-none select-none pointer-events-none overflow-hidden text-center" style={{ color: "rgba(194,138,30,0.06)" }}>
           a-MANT
         </div>
 
         {/* Footer bar */}
-        <div className="flex items-center justify-between px-5 sm:px-8 lg:px-12 py-6 mt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div className="flex items-center justify-between px-5 sm:px-8 lg:px-12 py-6 mt-2" style={{ borderTop: "1px solid rgba(20,20,30,0.07)" }}>
           <span className="text-[12px] font-medium text-foreground">a-MANT</span>
           <p className="text-[11px] text-muted-foreground">Mantle Turing Test · 2026</p>
         </div>
