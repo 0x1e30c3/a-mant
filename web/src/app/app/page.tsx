@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowDownToLine, ArrowUpRight, ShieldCheck, Coins, Zap, TrendingUp, BookOpen, Lock } from "lucide-react";
 import { GlassCard, Pill, SectionLabel, LiveDot, A } from "@/components/app/ui";
 import { DepositModal } from "@/components/app/DepositModal";
+import { GrowthChart } from "@/components/app/GrowthChart";
 import { useTotalValue, useVaultPosition, usePendingYield } from "@/hooks/useVault";
 import { useAgentProfile, useChapters } from "@/hooks/useAgent";
 import { CHAPTER_TYPE_LABELS, RISK_LABELS, RiskMode } from "@/types";
@@ -45,10 +46,10 @@ export default function DashboardPage() {
   const hasYield = parseFloat(yieldFormatted) > 0;
 
   return (
-    <div className="pt-6 lg:pt-8">
+    <div className="pt-6 lg:pt-8 space-y-4">
       <DepositModal open={depositOpen} onClose={() => setDepositOpen(false)} />
 
-      {/* Two-column dashboard on desktop, single column on mobile */}
+      {/* ── Two-column grid ── */}
       <div className="grid lg:grid-cols-3 gap-4 items-start">
         {/* ── Main column ── */}
         <div className="lg:col-span-2 space-y-4">
@@ -133,11 +134,6 @@ export default function DashboardPage() {
             </motion.div>
           )}
 
-          {/* Growth projection chart */}
-          <motion.div {...fade(0.18)}>
-            <GrowthChart principal={parseFloat(totalFormatted)} />
-          </motion.div>
-
           {/* Claimable yield */}
           {hasYield && (
             <motion.div {...fade(0.16)}>
@@ -212,7 +208,6 @@ export default function DashboardPage() {
             /* Axiom agent teaser card */
             <motion.div {...fade(0.2)}>
               <GlassCard className="overflow-hidden">
-                {/* Ambient glow top-right */}
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={{ background: "radial-gradient(ellipse 80% 60% at 100% 0%, rgba(194,138,30,0.13) 0%, transparent 70%)" }}
@@ -227,12 +222,10 @@ export default function DashboardPage() {
                     playsInline
                     className="absolute inset-0 w-full h-full object-cover"
                   />
-                  {/* Gradient overlay so card content below blends smoothly */}
                   <div
                     className="absolute inset-0"
-                    style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(var(--background-raw, 250,248,243), 0.85) 100%)" }}
+                    style={{ background: "linear-gradient(to bottom, transparent 40%, rgba(250,248,243,0.9) 100%)" }}
                   />
-                  {/* Badge top-right */}
                   <div className="absolute top-3 right-3">
                     <Pill tone="accent">AI-powered</Pill>
                   </div>
@@ -253,7 +246,7 @@ export default function DashboardPage() {
                       </div>
                     ))}
                   </div>
-                  <Pill tone="accent" className="text-[11px]">Activates on first deposit</Pill>
+                  <Pill tone="accent">Activates on first deposit</Pill>
                 </div>
               </GlassCard>
             </motion.div>
@@ -293,7 +286,6 @@ export default function DashboardPage() {
                   <p className="text-[13px] text-muted-foreground leading-relaxed mb-4">
                     Every Axiom decision becomes a chapter — a permanent on-chain record of your portfolio&apos;s story.
                   </p>
-                  {/* Placeholder chapter lines */}
                   <div className="space-y-2">
                     {["Chapter I will appear here", "Chapter II — after your first deposit"].map((t, i) => (
                       <div key={i} className="flex items-center gap-2.5 px-3 py-2 rounded-lg" style={{ background: "rgba(20,20,30,0.04)", border: "1px solid rgba(20,20,30,0.06)", opacity: 1 - i * 0.35 }}>
@@ -332,6 +324,11 @@ export default function DashboardPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* ── Full-width growth chart ── */}
+      <motion.div {...fade(0.38)}>
+        <GrowthChart principal={parseFloat(totalFormatted)} />
+      </motion.div>
     </div>
   );
 }
@@ -356,136 +353,5 @@ function Metric({ label, value }: { label: string; value: string }) {
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
       <p className="text-[13px] text-foreground font-medium">{value}</p>
     </div>
-  );
-}
-
-// ─── Growth projection chart ───────────────────────────────────────────────────
-function GrowthChart({ principal }: { principal: number }) {
-  const BLENDED_APY = 0.043; // ~4.3% blended (USDY 4.5% + mETH 3.8%)
-  const MONTHS = 12;
-  const W = 480;
-  const H = 120;
-  const PAD = { top: 12, right: 8, bottom: 24, left: 44 };
-
-  const base = principal > 0 ? principal : 100;
-
-  // Generate monthly compound data points
-  const points = Array.from({ length: MONTHS + 1 }, (_, i) => ({
-    month: i,
-    value: base * Math.pow(1 + BLENDED_APY / 12, i),
-  }));
-
-  const minVal = points[0].value;
-  const maxVal = points[MONTHS].value;
-  const range = maxVal - minVal || 1;
-
-  const toX = (i: number) =>
-    PAD.left + (i / MONTHS) * (W - PAD.left - PAD.right);
-  const toY = (v: number) =>
-    PAD.top + (1 - (v - minVal) / range) * (H - PAD.top - PAD.bottom);
-
-  // SVG polyline path
-  const linePath = points
-    .map((p, i) => `${i === 0 ? "M" : "L"}${toX(p.month).toFixed(1)},${toY(p.value).toFixed(1)}`)
-    .join(" ");
-
-  // Area fill path (close to bottom)
-  const areaPath =
-    linePath +
-    ` L${toX(MONTHS).toFixed(1)},${(H - PAD.bottom).toFixed(1)} L${toX(0).toFixed(1)},${(H - PAD.bottom).toFixed(1)} Z`;
-
-  const gain = maxVal - base;
-  const gainPct = ((gain / base) * 100).toFixed(2);
-
-  // X-axis labels: every 3 months
-  const xLabels = [0, 3, 6, 9, 12];
-  const monthNames = ["Now", "3m", "6m", "9m", "1yr"];
-
-  const fmtShort = (n: number) =>
-    n >= 1000
-      ? `$${(n / 1000).toFixed(1)}k`
-      : `$${n.toFixed(n < 10 ? 2 : 0)}`;
-
-  return (
-    <GlassCard className="p-5">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <SectionLabel>Projected growth</SectionLabel>
-          <p className="text-[11px] text-muted-foreground mt-0.5">12-month · blended {(BLENDED_APY * 100).toFixed(1)}% APY</p>
-        </div>
-        <div className="text-right">
-          <p className="text-[18px] font-light text-foreground leading-none">{fmtShort(maxVal)}</p>
-          <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--positive))" }}>+{gainPct}% · +{fmtShort(gain)}</p>
-        </div>
-      </div>
-
-      {/* SVG chart */}
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="w-full"
-        style={{ height: H, overflow: "visible" }}
-        aria-label={`Portfolio growth projection over 12 months`}
-      >
-        <defs>
-          <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgb(194,138,30)" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="rgb(194,138,30)" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="chartLine" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="rgba(194,138,30,0.5)" />
-            <stop offset="100%" stopColor="rgba(194,138,30,1)" />
-          </linearGradient>
-        </defs>
-
-        {/* Horizontal grid lines */}
-        {[0, 0.5, 1].map((t) => {
-          const y = PAD.top + t * (H - PAD.top - PAD.bottom);
-          const val = maxVal - t * range;
-          return (
-            <g key={t}>
-              <line
-                x1={PAD.left} y1={y} x2={W - PAD.right} y2={y}
-                stroke="rgba(20,20,30,0.07)" strokeWidth="1" strokeDasharray="3 3"
-              />
-              <text
-                x={PAD.left - 6} y={y + 4}
-                textAnchor="end"
-                fontSize="9"
-                fill="rgba(20,20,30,0.35)"
-              >
-                {fmtShort(val)}
-              </text>
-            </g>
-          );
-        })}
-
-        {/* Area fill */}
-        <path d={areaPath} fill="url(#chartFill)" />
-
-        {/* Line */}
-        <path d={linePath} fill="none" stroke="url(#chartLine)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-
-        {/* End dot */}
-        <circle
-          cx={toX(MONTHS)} cy={toY(maxVal)}
-          r="3.5"
-          fill={A.accent}
-          stroke="white" strokeWidth="1.5"
-        />
-
-        {/* X-axis labels */}
-        {xLabels.map((m, i) => (
-          <text
-            key={m}
-            x={toX(m)} y={H - 4}
-            textAnchor="middle"
-            fontSize="9"
-            fill="rgba(20,20,30,0.35)"
-          >
-            {monthNames[i]}
-          </text>
-        ))}
-      </svg>
-    </GlassCard>
   );
 }
