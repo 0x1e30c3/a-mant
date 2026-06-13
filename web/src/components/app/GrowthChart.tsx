@@ -55,8 +55,7 @@ export function GrowthChart({ principal }: { principal: number }) {
 
   const W = 800;
   const H = 200;
-  const PAD = { top: 20, right: 16, bottom: 36, left: 56 };
-  const innerW = W - PAD.left - PAD.right;
+  const PAD = { top: 20, right: 16, bottom: 36, left: 56 };  const innerW = W - PAD.left - PAD.right;
   const innerH = H - PAD.top - PAD.bottom;
 
   const minVal = points[0].value;
@@ -112,9 +111,9 @@ export function GrowthChart({ principal }: { principal: number }) {
   );
 
   return (
-    <GlassCard className="p-6">
+    <GlassCard className="p-6 h-full flex flex-col">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
         <div className="flex items-start gap-3">
           <span
             className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
@@ -125,24 +124,24 @@ export function GrowthChart({ principal }: { principal: number }) {
           <div>
             <SectionLabel>Projected growth</SectionLabel>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              Compound projection · blended {(BLENDED_APY * 100).toFixed(1)}% APY
+              Compound · blended {(BLENDED_APY * 100).toFixed(1)}% APY
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 flex-shrink-0">
           {/* Stats */}
-          <div className="flex items-center gap-4 text-right">
-            <div>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">End value</p>
-              <p className="text-[18px] font-light text-foreground leading-none">{fmtVal(maxVal)}</p>
+              <p className="text-[16px] font-light text-foreground leading-none">{fmtVal(maxVal)}</p>
             </div>
             <div
               className="px-2.5 py-1.5 rounded-lg"
               style={{ background: "rgba(64,200,120,0.08)", border: "1px solid rgba(64,200,120,0.18)" }}
             >
-              <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: "hsl(var(--positive))" }}>Gain</p>
-              <p className="text-[14px] font-semibold leading-none" style={{ color: "hsl(var(--positive))" }}>
+              <p className="text-[9px] uppercase tracking-wider mb-0.5" style={{ color: "hsl(var(--positive))" }}>Gain</p>
+              <p className="text-[13px] font-semibold leading-none" style={{ color: "hsl(var(--positive))" }}>
                 +{gainPct}%
               </p>
             </div>
@@ -157,7 +156,7 @@ export function GrowthChart({ principal }: { principal: number }) {
               <button
                 key={p.label}
                 onClick={() => setPeriod(p)}
-                className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all"
+                className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all"
                 style={
                   period.label === p.label
                     ? { background: A.accent, color: A.onAccent }
@@ -171,13 +170,14 @@ export function GrowthChart({ principal }: { principal: number }) {
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="relative select-none">
+      {/* Chart — flex-1 so it stretches to fill remaining card height */}
+      <div className="relative select-none flex-1 min-h-0">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${W} ${H}`}
-          className="w-full"
-          style={{ height: 200, overflow: "visible", cursor: "crosshair" }}
+          className="w-full h-full"
+          preserveAspectRatio="none"
+          style={{ overflow: "visible", cursor: "crosshair" }}
           onMouseMove={handleMouseMove}
           onMouseLeave={() => setTooltip(null)}
           aria-label="Portfolio growth projection chart"
@@ -331,7 +331,7 @@ export function GrowthChart({ principal }: { principal: number }) {
       </div>
 
       {/* Footer note */}
-      <p className="text-[10px] text-muted-foreground mt-4">
+      <p className="text-[10px] text-muted-foreground mt-3 flex-shrink-0">
         Projected figures are estimates based on current APY rates and do not guarantee future returns.
       </p>
     </GlassCard>
