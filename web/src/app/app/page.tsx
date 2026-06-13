@@ -46,13 +46,13 @@ export default function DashboardPage() {
   const hasYield = parseFloat(yieldFormatted) > 0;
 
   return (
-    <div className="pt-6 lg:pt-8 space-y-4">
+    <div className="pt-6 lg:pt-8">
       <DepositModal open={depositOpen} onClose={() => setDepositOpen(false)} />
 
       {/* ── Two-column grid ── */}
-      <div className="grid lg:grid-cols-3 gap-4 items-start">
+      <div className="grid lg:grid-cols-3 gap-4 lg:items-stretch">
         {/* ── Main column ── */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 flex flex-col gap-4">
           {/* Balance hero */}
           <motion.div {...fade(0)}>
             <GlassCard glow className="p-6 sm:p-8" brackets="all">
@@ -180,6 +180,11 @@ export default function DashboardPage() {
               </GlassCard>
             </motion.div>
           )}
+
+          {/* Growth chart — flex-1 fills remaining height to match side column */}
+          <motion.div {...fade(0.2)} className="flex-1 min-h-0">
+            <GrowthChart principal={parseFloat(totalFormatted)} />
+          </motion.div>
         </div>
 
         {/* ── Side column ── */}
@@ -324,11 +329,6 @@ export default function DashboardPage() {
           </motion.div>
         </div>
       </div>
-
-      {/* ── Full-width growth chart ── */}
-      <motion.div {...fade(0.38)}>
-        <GrowthChart principal={parseFloat(totalFormatted)} />
-      </motion.div>
     </div>
   );
 }
