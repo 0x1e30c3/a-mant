@@ -38,6 +38,13 @@ const CHRONICLE_ABI = parseAbi([
   "function createChapter(address user, string title, string narrative, int256 impactAmount, uint8 chapterType, string worldContext) external returns (uint256)",
 ]);
 
+// ERC-8004 Reputation Registry — the autonomous monitor publishes an outcome signal
+// for each executed decision. The executor is an independent client (not the agent's
+// owner/operator), so giveFeedback's self-feedback guard passes without any approval.
+const REPUTATION_ABI = parseAbi([
+  "function giveFeedback(uint256 agentId, int128 value, uint8 valueDecimals, string tag1, string tag2, string endpoint, string feedbackURI, bytes32 feedbackHash) external",
+]);
+
 // ─── Token addresses ──────────────────────────────────────────────────────────
 
 const TOKEN_ADDRESS: Record<string, `0x${string}`> = {
@@ -195,6 +202,50 @@ export async function logAgentDecision(
     console.log(`[executor] ✓ Decision on-chain: ${hash}`);
   } catch (err) {
     console.error("[executor] Failed to log decision:", err);
+  }
+}
+
+// ─── ERC-8004: publish reputation feedback ─────────────────────────────────────
+
+/**
+ * Publish an ERC-8004 reputation signal for the agent's executed decision.
+ * No-op when REPUTATION_ADDRESS is unset. The signed value is the decision's
+ * estimated impact (18-decimals), tagged with the action.
+ */
+export async function recordReputationFeedback(
+  agentId: bigint,
+  decision: Decision
+): Promise<void> {
+  const reputationAddress = process.env.REPUTATION_ADDRESS as `0x${string}` | undefined;
+  if (!reputationAddress) return;
+
+  const { walletClient, publicClient } = getClients();
+  // Clamp to the registry's ±1e38 bound.
+  const MAX_ABS = 10n ** 38n;
+  let value = decision.impactEstimate;
+  if (value > MAX_ABS) value = MAX_ABS;
+  if (value < -MAX_ABS) value = -MAX_ABS;
+
+  try {
+    const hash = await walletClient.writeContract({
+      address: reputationAddress,
+      abi: REPUTATION_ABI,
+      functionName: "giveFeedback",
+      args: [
+        agentId,
+        value,
+        18,
+        "impact",
+        decision.action,
+        "a-mant-autonomous-agent",
+        "",
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      ],
+    });
+    await publicClient.waitForTransactionReceipt({ hash });
+    console.log(`[executor] ✓ ERC-8004 feedback published: ${hash}`);
+  } catch (err) {
+    console.error("[executor] Failed to publish reputation feedback:", err);
   }
 }
 
