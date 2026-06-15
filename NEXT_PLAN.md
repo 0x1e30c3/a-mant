@@ -1,245 +1,394 @@
 # a-MANT — Next Plan
-
-Hackathon deadline: **June 15, 2026**
-
----
-
-## Status
-
-### Done
-- [x] Monorepo scaffold (web, contract, agent)
-- [x] Three Solidity contracts: AMANTVault, AMANTAgent, AMANTChronicle
-- [x] Hardhat config for Mantle mainnet + testnet (EVM: cancun)
-- [x] Agent signal fetchers: FRED, beaconcha.in, DeFiLlama, Fear & Greed
-- [x] Decision engine (5-rule priority system)
-- [x] Executor: viem write client calling contracts on-chain
-- [x] Narrator: LLM (NVIDIA NIM) → chapter text generation
-- [x] Agent cron loop (every 15 min), multi-user
-- [x] Web onboarding flow (5 steps, framer-motion transitions)
-- [x] Dashboard page (total value, allocation, AI status, latest chapter)
-- [x] Chronicle page (chapter timeline, color-coded by type)
-- [x] Chat page (SAGE interface, LLM API route)
-- [x] Wagmi v2 config for Mantle chains
-- [x] Contract ABIs with correct tuple encoding
-- [x] All UI in English
-- [x] TypeScript target ES2020, contracts compile clean
-- [x] Pushed to GitHub
+_Last updated: June 15, 2026_
 
 ---
 
-## Critical Path (Must Ship Before June 15)
+## Current State
 
-### 1. Contract Deployment to Mantle Testnet
-**Priority: BLOCKER**
+### ✅ Shipped
+- Monorepo scaffold (web, contract, agent)
+- Three Solidity contracts: AMANTVault, AMANTAgent, AMANTChronicle
+- Agent signal fetchers: FRED, beaconcha.in, DeFiLlama, Fear & Greed
+- Decision engine (5-rule priority system)
+- Executor: viem write client → on-chain
+- Narrator: Claude API → chapter text generation
+- Agent cron loop (every 15 min), multi-user
+- Web onboarding flow (5 steps, framer-motion)
+- Dashboard: balance hero, deposit modal, USDY/mETH allocation, growth chart
+- Chronicle: timeline with chapter cards + **chapter detail modal** (clickable)
+- Chat page (SAGE interface, LLM API route)
+- DepositModal: token selector, amount input, quick chips, approve→deposit flow, done state
+- GrowthChart: full-width SVG with period selector (3M/6M/1Y/3Y/5Y), hover tooltip, animated line
+- Side column: Axiom teaser (video + features), Chronicle teaser, APY overview
 
-Nothing works end-to-end without deployed contracts.
+---
 
+## Roadmap
+
+### Phase 1 — Stabilize & Polish (This Week)
+_Goal: Demo-ready, zero broken flows_
+
+#### 1.1 Build & Type Errors
+- [ ] Resolve Next.js build timeout (kill orphan processes, clean `.next/`)
+- [ ] Verify all new components typecheck (`tsc --noEmit` from `web/`)
+- [ ] Fix any remaining lint warnings
+
+#### 1.2 DepositModal Cleanup
+- [ ] Test full approve → deposit → done flow on testnet
+- [ ] Handle edge case: user rejects MetaMask popup mid-flow (stuck in `approving`)
+- [ ] Add tx hash link to Mantle explorer in done state
+- [ ] Backdrop click should close done state too (currently only X button)
+
+#### 1.3 Chronicle Modal
+- [ ] Verify ChapterModal keyboard navigation (Escape → close, ← → arrows)
+- [ ] Add `worldContext` fallback text when field is empty
+- [ ] Swipe gesture for mobile (prev/next chapter)
+
+#### 1.4 Layout QA
+- [ ] Dashboard: verify GrowthChart fills column height correctly on all breakpoints
+- [ ] Mobile: test single-column layout on 375px
+- [ ] Chronicle: timeline rail alignment on mobile
+
+---
+
+### Phase 2 — Core AI Features (Week 2)
+_Goal: The AI actually feels alive_
+
+#### 2.1 Axiom Reasoning Log ✅
+**File:** `web/src/components/app/ReasoningLog.tsx`
+
+Every 15-min agent cycle reads signals before deciding. Surface this in the dashboard side column (below the Axiom card when agent is active) as a live feed of what Axiom is thinking.
+
+```
+HORIZON SIGNALS · 3 min ago
+┌─ Fed Funds Rate     5.25%   → stable
+├─ USDY APY          4.52%   ↑ +0.08%
+├─ mETH APY          3.81%   ↓ -0.12%
+├─ ETH Fear & Greed  62      → neutral
+└─ Decision          Hold current allocation
+```
+
+- ✅ Pull from agent API or on-chain `AgentProfile.lastDecision`
+- ✅ Auto-refresh every 60s
+- ✅ Collapsed by default, expand on click
+
+#### 2.2 Risk Mood Indicator ✅
+**File:** `web/src/components/app/RiskMood.tsx`
+
+Ambient pill in the dashboard header showing current market stress as read by Axiom.
+
+```
+● Calm market     (green)  — AI optimizing for yield
+◐ Mild tension    (amber)  — AI watching closely  
+● Elevated risk   (orange) — AI in protection mode
+● High stress     (red)    — AI shifted to safety
+```
+
+- ✅ Compute from blended signal score in decision engine
+- ✅ Expose via `/api/mood` route reading agent's last cycle data
+- ✅ Update on dashboard load + every 5 min
+
+#### 2.3 Weekly Digest Card ✅
+**File:** `web/src/components/app/WeeklyDigest.tsx`
+
+A card that appears on Monday (or after 7 days from deposit) summarizing the week:
+
+```
+┌─────────────────────────────────────┐
+│  AXIOM'S WEEKLY REPORT              │
+│  June 9 – June 15, 2026             │
+│                                     │
+│  5 decisions made                   │
+│  $2.41 yield generated              │
+│  2 protection moves                 │
+│                                     │
+│  "A relatively stable week.         │
+│   Treasury yields held firm while   │
+│   ETH staking demand softened."     │
+└─────────────────────────────────────┘
+```
+
+- ✅ Generated by Claude/Narrator from the week's chapters
+- ✅ Stored in localStorage, regenerated weekly
+- ✅ Dismissable, shown once per week
+
+#### 2.4 SAGE Chat Improvements ✅
+**File:** `web/src/app/app/chat/page.tsx`
+
+Current chat works but lacks context about the user's actual position.
+
+- ✅ Pass vault position + recent chapters as system context to Claude
+- ✅ Suggested questions on empty state: "Why did you rebalance?", "How's my goal progress?", "What's your current strategy?"
+- [ ] Stream responses (use `stream: true` on Claude API) — *Optional: current non-streaming works well*
+- ✅ Save last 20 messages in localStorage (persist across page refreshes)
+- [ ] "Ask about this chapter" button on ChapterModal → opens chat with chapter context pre-loaded — *Future enhancement*
+
+---
+
+### Phase 3 — RWA Intelligence (Week 3)
+_Goal: Axiom feels genuinely smarter than a static vault_
+
+#### 3.1 Yield Comparison Widget ✅
+**File:** `web/src/components/app/YieldComparison.tsx`
+
+Show USDY/mETH yield vs traditional alternatives in a simple side-by-side. Makes the "why crypto" story obvious without saying it.
+
+```
+YOUR MONEY WORKING HARDER
+
+          a-MANT    US Savings   T-Bill
+APY        4.3%       0.5%        4.2%
+$1,000    $43/yr      $5/yr      $42/yr
+Liquidity  Daily      7 days     Monthly
+```
+
+- ✅ USDY/mETH rates: live from on-chain
+- ✅ US savings rate: FRED API (already wired in agent signals)
+- ✅ T-Bill: FRED 3-month treasury yield
+- ✅ Update daily, cache in localStorage
+
+#### 3.2 Goal Simulator ✅
+**File:** `web/src/components/app/GoalSimulator.tsx`
+
+Interactive "what if" tool. User drags a slider for monthly top-up amount, sees updated timeline to goal.
+
+```
+REACH YOUR GOAL FASTER
+
+Goal: $2,000    Current: $100    APY: 4.3%
+
+Add $[   50  ] per month
+
+Reach goal in: 22 months  (Jul 2028)
+Total deposited: $1,100
+Yield earned:    $900
+
+[   0 ──────●──────────── 500  ] $/month
+```
+
+- ✅ Pure client-side math (compound + regular deposits formula)
+- ✅ Animate timeline bar when slider moves
+- ✅ "Set up monthly deposit" CTA (future feature)
+
+#### 3.3 Portfolio Health Score ✅
+**File:** `web/src/components/app/HealthScore.tsx`
+
+AI-computed 0–100 score shown as a circular gauge. Taps into existing decision engine signals.
+
+**Score components:**
+| Factor | Weight | How |
+|---|---|---|
+| Goal progress pace | 30% | On track / behind / ahead |
+| Allocation vs risk mode | 25% | Actual vs recommended USDY/mETH split |
+| Yield optimization | 25% | Current APY vs best available |
+| Diversification | 20% | Concentration in single asset |
+
+- ✅ Compute on frontend from vault position + agent profile
+- ✅ Tooltip explaining each component on hover
+- ✅ Color: red < 40, amber 40–70, green > 70
+
+#### 3.4 APY Live Data ✅
+**File:** `web/src/app/api/apy/route.ts`
+
+Replace hardcoded 4.5% / 3.8% with live reads.
+
+- ✅ USDY APY: Ondo Finance API or on-chain price feed
+- ✅ mETH APY: Mantle LSP staking rate (already in `agent/src/signals/onchain.ts`)
+- ✅ Expose as `/api/apy` → consumed by dashboard, GrowthChart, YieldComparison
+- ✅ Cache 1 hour (avoid rate limits)
+
+---
+
+### Phase 4 — Engagement & Sharing (Week 4)
+_Goal: Users want to come back and show others_
+
+#### 4.1 Chapter Sharing ✅
+**File:** `web/src/components/app/ShareChapter.tsx`
+
+Share button inside ChapterModal that generates an OG image and share link.
+
+- ✅ Generate share card: chapter title + impact + "Protected by Axiom on Mantle"
+- ✅ Share to X/Twitter pre-filled: `"My AI just {action}. +$X in savings. #MantleAI #aMant`
+- ✅ Share to Farcaster (Warpcast intent URL)
+- ✅ Copy link button → `/share/chapter/{txHash}`
+
+**OG image generation:**
+- ✅ `web/src/app/api/og/chapter/route.tsx` using `@vercel/og`
+- ✅ Dark card, chapter title, amber accent, Mantle logo
+
+#### 4.2 Milestone NFT ✅
+**File:** `web/src/components/app/MilestoneNFT.tsx`
+
+When a chapter has `chapterType === 2` (MILESTONE) and goal is reached:
+
+- ✅ Show special full-screen celebration in Chronicle
+- ✅ "Mint your Chronicle as NFT" — calls `AMANTChronicle.mintChronicleNFT()`
+- ✅ NFT metadata: all chapter titles, total yield, duration, goal achieved
+- ✅ Link to NFT on Mantle explorer
+
+#### 4.3 Transaction Toasts ✅
+**File:** `web/src/components/app/Toaster.tsx`
+
+Non-intrusive notifications for AI actions (not just user-triggered tx).
+
+- ✅ Install `sonner` (in deps but unused)
+- ✅ Wire to: deposit confirmed, yield claimed, agent rebalanced, chapter written
+- ✅ Toast style: dark, amber accent, icon from chapter type
+- [ ] "View chapter →" link when new chapter is created — *Ready for integration when event listeners added*
+
+#### 4.4 Rebalance History ✅
+Add to dashboard below allocation cards (when agent has history):
+
+```
+RECENT ACTIVITY
+Jun 15  USDY → mETH  $35   "ETH staking surged"
+Jun 12  mETH → USDY  $60   "Volatility detected"
+Jun 10  Yield claim  $2.41  Auto-compounded
+```
+
+- ✅ Read from `AMANTVault` rebalance events
+- ✅ Max 5 rows, "View all in Chronicle →" link
+
+---
+
+### Phase 5 — Infrastructure (Ongoing)
+_Goal: Actually runs in production_
+
+#### 5.1 Contract Deployment
 ```bash
-# Fund deployer wallet at https://faucet.sepolia.mantle.xyz
-pnpm deploy:testnet
-# Then copy addresses to .env
-```
+# Mantle Testnet (chainId: 5003)
+pnpm deploy:contract
 
-After deploy:
-- Update `.env` with `NEXT_PUBLIC_VAULT_ADDRESS`, `NEXT_PUBLIC_AGENT_ADDRESS`, `NEXT_PUBLIC_CHRONICLE_ADDRESS`
-- Test each contract function manually via Hardhat console or script
-
----
-
-### 2. Deposit Flow (Missing from UI)
-**Priority: HIGH**
-
-The dashboard shows "Deposit" button but there is no deposit flow. A user cannot actually put money in. This needs:
-
-#### A. Token Approval Modal
-File to create: `web/src/components/DepositModal.tsx`
-
-Steps:
-1. User selects token (USDY or mETH) and amount
-2. Check current allowance via `ERC20.allowance(user, VAULT_ADDRESS)`
-3. If insufficient → call `ERC20.approve(VAULT_ADDRESS, amount)`, wait for tx
-4. Then call `AMANTVault.deposit(token, amount)`, wait for tx
-5. Show success state, refresh position
-
-```typescript
-// Hooks needed in web/src/hooks/useDeposit.ts
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-
-export function useApprove(token: `0x${string}`) { ... }
-export function useDeposit() { ... }
-```
-
-#### B. Wire Deposit into Dashboard
-Replace the "Deposit" button on `/app/page.tsx` with modal trigger.
-
----
-
-### 3. Onboarding → On-Chain Actions
-**Priority: HIGH**
-
-The onboarding flow currently only stores state locally. The "Activate Axiom" step needs to:
-
-1. Call `AMANTAgent.createAgent(userAddress, "Axiom")` — mints soulbound NFT
-2. Call `AMANTVault.setGoal(goalAmount, durationDays, riskMode)` — stores goal on-chain
-3. Then redirect to deposit flow
-
-File to update: `web/src/app/page.tsx` → `ActivateStep` component
-
-```typescript
-// In ActivateStep:
-const { writeContract } = useWriteContract();
-
-// 1. Create agent NFT
-writeContract({
-  address: ADDRESSES.AGENT,
-  abi: AGENT_ABI,
-  functionName: "createAgent",
-  args: [address, "Axiom"],
-});
-
-// 2. Set goal
-writeContract({
-  address: ADDRESSES.VAULT,
-  abi: VAULT_ABI,
-  functionName: "setGoal",
-  args: [parseUnits(data.goalAmount, 18), BigInt(data.durationMonths * 30), data.riskMode],
-});
-```
-
----
-
-### 4. Wrong Network Detection
-**Priority: MEDIUM**
-
-If user is on Ethereum mainnet instead of Mantle, all contract calls fail silently.
-
-Add a network guard component: `web/src/components/NetworkGuard.tsx`
-
-```typescript
-import { useChainId, useSwitchChain } from "wagmi";
-
-export function NetworkGuard({ children }: { children: React.ReactNode }) {
-  const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
-  
-  if (chainId !== 5003 && chainId !== 5000) {
-    return (
-      <div className="fixed inset-0 ...">
-        <p>Switch to Mantle network</p>
-        <Button onClick={() => switchChain({ chainId: 5003 })}>Switch to Mantle Testnet</Button>
-      </div>
-    );
-  }
-  return children;
-}
-```
-
-Wrap in `web/src/app/app/layout.tsx`.
-
----
-
-### 5. Agent Server Setup
-**Priority: MEDIUM**
-
-The agent needs to run on a server (not locally) to actually execute autonomously during the hackathon demo.
-
-Options:
-- **Railway** (free tier, easiest): `railway up` from `/agent`
-- **Fly.io**: `fly deploy`
-- **VPS**: run with `pm2 start pnpm -- start`
-
-Agent `.env` needs:
-```
-PRIVATE_KEY=0x...           # Agent wallet (separate from user wallet)
-NVIDIA_API_KEY=...
-FRED_API_KEY=...
+# Update .env:
 NEXT_PUBLIC_VAULT_ADDRESS=0x...
 NEXT_PUBLIC_AGENT_ADDRESS=0x...
 NEXT_PUBLIC_CHRONICLE_ADDRESS=0x...
-MONITORED_USERS=0xDEMO_WALLET_ADDRESS
 ```
 
-Fund the agent wallet with testnet MNT for gas.
+- [ ] Fund deployer wallet from https://faucet.sepolia.mantle.xyz
+- [ ] Verify contracts on Mantle explorer
+- [ ] Run post-deploy wiring script (`deploy.ts` wires vault↔agent↔chronicle)
+- [ ] Test deposit/withdraw manually via Hardhat console
 
----
+#### 5.2 Agent Deployment
+**Options (easiest → most control):**
 
-### 6. Vercel Deployment
-**Priority: MEDIUM**
+| Platform | Command | Notes |
+|---|---|---|
+| Railway | `railway up` from `/agent` | Free tier, easiest |
+| Fly.io | `fly deploy` | More control, free tier |
+| VPS | `pm2 start pnpm -- start` | Best for demo day stability |
 
 ```bash
-cd web
-vercel --prod
+# Agent .env (separate from root .env):
+PRIVATE_KEY=0x...           # Agent wallet (not user wallet)
+ANTHROPIC_API_KEY=...       # or NVIDIA_API_KEY
+FRED_API_KEY=...
+RPC_URL=https://rpc.testnet.mantle.xyz
+VAULT_ADDRESS=0x...
+AGENT_ADDRESS=0x...
+CHRONICLE_ADDRESS=0x...
+MONITORED_USERS=0xDEMO_WALLET
 ```
 
-Set environment variables in Vercel dashboard (same as `.env`).
+- [ ] Fund agent wallet with testnet MNT for gas (~10 MNT)
+- [ ] Test one full cycle manually before deploying
+- [ ] Set up health check endpoint in agent (`/health` route)
 
-Production URL goes into hackathon submission.
+#### 5.3 Web Deployment
+```bash
+cd web && vercel --prod
+```
+
+- [ ] Set all `NEXT_PUBLIC_*` env vars in Vercel dashboard
+- [ ] Set `ANTHROPIC_API_KEY` for chat route
+- [ ] Verify build passes on Vercel (not just local)
+- [ ] Custom domain if available
+
+#### 5.4 Network Guard
+**File:** `web/src/components/app/NetworkGuard.tsx`
+
+Wrap `/app` layout with chain detection. If wrong chain → overlay with switch prompt.
+
+```typescript
+// web/src/app/app/layout.tsx
+<NetworkGuard>
+  {children}
+</NetworkGuard>
+```
 
 ---
 
-## Nice-to-Have (If Time Permits)
+## Feature Priority Matrix
 
-### Withdraw Flow
-- Same pattern as deposit — modal → write `AMANTVault.withdraw(token, amount)`
+| Feature | Impact | Effort | Priority |
+|---|---|---|---|
+| Contract deployment | 🔴 Blocker | Low | P0 |
+| Agent on server | 🔴 Blocker | Low | P0 |
+| Build fixes | 🔴 Blocker | Low | P0 |
+| Axiom Reasoning Log | High | Medium | ✅ P1 |
+| Risk Mood Indicator | High | Low | ✅ P1 |
+| SAGE chat improvements | High | Medium | ✅ P1 |
+| APY live data | Medium | Low | ✅ P1 |
+| Yield Comparison Widget | High | Low | ✅ P2 |
+| Goal Simulator | High | Medium | ✅ P2 |
+| Transaction Toasts | Medium | Low | ✅ P2 |
+| Rebalance History | Medium | Low | ✅ P2 |
+| Portfolio Health Score | Medium | High | ✅ P3 |
+| Weekly Digest | Medium | Medium | ✅ P3 |
+| Chapter Sharing | Low | Medium | ✅ P3 |
+| Milestone NFT | Low | High | ✅ P4 |
 
-### Transaction Toast Notifications
-- Install `sonner` (already in deps) and wire up tx confirmation toasts
-- "Axiom rebalanced your portfolio" → toast notification
+---
 
-### Rebalance History on Dashboard
-- Under AI status card, show last 3 rebalance events from `getRebalanceHistory`
-- Date, direction (USDY→mETH), amount, reason
+## Demo Script (Judge-Facing)
 
-### Milestone NFT Display
-- When Chronicle `chapterType === 2` (MILESTONE), show NFT badge in Chronicle timeline
-- Link to NFT on Mantle explorer
+**Setup before demo:** Agent running, 1 chapter pre-written, testnet faucet topped up.
 
-### APY Live Data
-- Replace hardcoded `~4.5%` on dashboard with live read from Aave Pool
-- Already implemented in `agent/src/signals/onchain.ts`, expose via API route
+```
+1. Open /onboard
+   → "I want to save $500 for 6 months, Balanced risk"
+   
+2. Connect MetaMask (Mantle Testnet)
+   → Shows Axiom teaser with video
+   
+3. Make first deposit
+   → DepositModal: select USDY, input $100, confirm
+   → tx confirms, done state with close button
+   
+4. Dashboard loads
+   → Balance: $100.00 with Live indicator
+   → Growth chart showing 12-month projection
+   → Axiom card activates (agent detected deposit)
+   
+5. Open Chronicle
+   → "The First Deposit" chapter visible
+   → Click chapter → modal opens with full narrative
+   → "World context", "Portfolio impact", on-chain badge
+   
+6. Open Chat (SAGE)
+   → Ask: "Why did you choose USDY over mETH?"
+   → Axiom responds with context about current rates
+   
+7. Back to Dashboard
+   → Point at Reasoning Log: "These are the signals Axiom read"
+   → Risk Mood: "Currently calm — optimizing for yield"
+
+Key message:
+"This AI already acted before you opened the app.
+ It reads real macro data. It writes a story.
+ And it does it all on-chain, on Mantle."
+```
 
 ---
 
 ## Hackathon Submission Checklist
 
 - [ ] Contracts deployed to Mantle testnet
-- [ ] Web app live on Vercel (or similar)
+- [ ] At least one chapter auto-generated by agent
+- [ ] Web app live on Vercel
 - [ ] Agent running autonomously on server
-- [ ] At least one full demo cycle (deposit → AI decides → chapter written)
-- [ ] Demo video (3-5 min): show onboarding, AI taking action, chronicle updating
-- [ ] DoraHacks submission form filled (project description, track, repo, demo URL)
-- [ ] Team info added to submission
-
----
-
-## Demo Script (for Judges)
-
-1. Open app → onboarding: "I want to save $500 for 6 months, Balanced risk"
-2. Connect MetaMask on Mantle Testnet
-3. Activate Axiom → soulbound NFT minted on-chain
-4. Deposit 500 USDY
-5. Show Chronicle — "The First Deposit" chapter appears
-6. Manually trigger one agent cycle (or show it auto-running)
-7. Agent detects APY differential → rebalances 35% to mETH
-8. Chronicle updates: "A Calculated Move" chapter
-9. Open Chat → ask "Why did you move my funds?"
-10. Axiom explains: "ETH staking yield was 1.8% higher than USDY at the time..."
-11. Show agent's reputation score increased
-
-**Key message to judges**: This is not a chatbot. It is an autonomous agent that already acted before you opened the app.
-
----
-
-## Architecture Decision Notes
-
-### Why two tokens (USDY + mETH)?
-Gives the AI a real decision to make — RWA stablecoin vs LST. Different risk profiles, different yield curves, different macro sensitivity. This is the core of the AI x RWA track.
-
-### Why not use Aave/Agni directly?
-For the hackathon, the vault holds tokens directly. The AI simulates "rebalancing" by updating internal allocation tracking. Real protocol integration (depositing into Aave yield strategies) is the V2 feature.
-
-### Why soulbound agent NFT?
-ERC-8004 is Mantle's AI agent identity standard. Using it signals track alignment. The non-transferable NFT means the AI agent is permanently bound to one user — it's *your* AI, not a shared protocol.
-
-### Why narrative chapters instead of a dashboard table?
-Numbers don't create emotional investment. A story does. "Your AI shifted $180 to safer ground because treasury yields dipped" is more memorable than a table row. This is the UX differentiator vs every other DeFi dashboard.
+- [ ] Demo video (3–5 min) recorded
+- [ ] X/Twitter thread: pitch + demo + `#MantleAIHackathon`
+- [ ] DoraHacks form filled (description, track, repo URL, deployed URL, contract addresses)
+- [ ] HackQuest submission cross-posted
