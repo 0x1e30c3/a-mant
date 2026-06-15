@@ -8,6 +8,7 @@ import { useAccount, useDisconnect } from "wagmi";
 import { Wallet, ScrollText, Sparkles, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AppBackdrop, A, LiveDot } from "@/components/app/ui";
+import { Toaster } from "@/components/app/Toaster";
 
 const NAV = [
   { href: "/app", label: "Portfolio", icon: Wallet },
@@ -24,6 +25,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative min-h-screen text-foreground">
+      <Toaster />
       <AppBackdrop />
 
       <header className="sticky top-0 z-40 pt-3">
