@@ -6,6 +6,18 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+interface IChronicle {
+    // chapterType is an enum (uint8) on the Chronicle; ChapterType.DEPOSIT == 4.
+    function createChapter(
+        address user,
+        string calldata title,
+        string calldata narrative,
+        int256 impactAmount,
+        uint8 chapterType,
+        string calldata worldContext
+    ) external returns (uint256);
+}
+
 /// @title AMANTVaultTestnet — testnet version with configurable token addresses
 /// @dev Identical logic to AMANTVault but accepts any two ERC20 tokens (mock USDY/mETH)
 contract AMANTVaultTestnet is Ownable, ReentrancyGuard {
@@ -97,17 +109,37 @@ contract AMANTVaultTestnet is Ownable, ReentrancyGuard {
         IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
 
         UserPosition storage pos = positions[msg.sender];
+        bool firstDeposit = pos.depositedAt == 0;
+
         if (token == usdyToken) {
             pos.usdyAmount += amount;
         } else {
             pos.methAmount += amount;
         }
 
-        if (pos.depositedAt == 0) {
+        if (firstDeposit) {
             pos.depositedAt = block.timestamp;
         }
 
         emit Deposited(msg.sender, token, amount);
+
+        if (firstDeposit) {
+            _writeGenesisChapter(msg.sender);
+        }
+    }
+
+    /// @dev Writes the user's first Chronicle chapter on their first deposit.
+    ///      Best-effort: never blocks a deposit if the Chronicle write reverts.
+    function _writeGenesisChapter(address user) internal {
+        if (chronicleContract == address(0)) return;
+        try IChronicle(chronicleContract).createChapter(
+            user,
+            "The first chapter",
+            "You opened your vault and made your first deposit. Axiom is now watching over your savings - every move from here becomes a chapter you can read.",
+            int256(0),
+            4, // ChapterType.DEPOSIT
+            ""
+        ) returns (uint256) {} catch {}
     }
 
     function withdraw(address token, uint256 amount) external nonReentrant {
