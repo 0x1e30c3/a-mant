@@ -13,12 +13,12 @@ Hackathon deadline: **June 15, 2026**
 - [x] Agent signal fetchers: FRED, beaconcha.in, DeFiLlama, Fear & Greed
 - [x] Decision engine (5-rule priority system)
 - [x] Executor: viem write client calling contracts on-chain
-- [x] Narrator: Claude API → chapter text generation
+- [x] Narrator: LLM (NVIDIA NIM) → chapter text generation
 - [x] Agent cron loop (every 15 min), multi-user
 - [x] Web onboarding flow (5 steps, framer-motion transitions)
 - [x] Dashboard page (total value, allocation, AI status, latest chapter)
 - [x] Chronicle page (chapter timeline, color-coded by type)
-- [x] Chat page (SAGE interface, Claude API route)
+- [x] Chat page (SAGE interface, LLM API route)
 - [x] Wagmi v2 config for Mantle chains
 - [x] Contract ABIs with correct tuple encoding
 - [x] All UI in English
@@ -151,7 +151,7 @@ Options:
 Agent `.env` needs:
 ```
 PRIVATE_KEY=0x...           # Agent wallet (separate from user wallet)
-ANTHROPIC_API_KEY=sk-ant-...
+NVIDIA_API_KEY=...
 FRED_API_KEY=...
 NEXT_PUBLIC_VAULT_ADDRESS=0x...
 NEXT_PUBLIC_AGENT_ADDRESS=0x...
