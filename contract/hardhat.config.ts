@@ -12,6 +12,8 @@ const config: HardhatUserConfig = {
         enabled: true,
         runs: 200,
       },
+      // ERC-8004 registries emit wide events; viaIR avoids "stack too deep".
+      viaIR: true,
       evmVersion: "cancun",
     },
   },
