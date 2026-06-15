@@ -1,0 +1,54 @@
+feat: complete Phase 2-4 features — AI transparency, RWA intelligence, engagement & sharing
+
+Implemented 12 high-priority features with proper TypeScript types, error handling, and design consistency.
+
+## Phase 2 — Core AI Features (P1)
+✅ RiskMood: Real-time market stress indicator with 4 mood levels
+✅ ReasoningLog: Collapsible signal feed showing Axiom's decision process
+✅ APY Live Data: Custom hook + API route with 1-hour cache
+✅ SAGE Chat: Context-aware (vault position + chapters), localStorage persistence
+
+## Phase 3 — RWA Intelligence (P2 & P3)
+✅ YieldComparison: Side-by-side a-MANT vs Savings vs T-Bill with live rates
+✅ GoalSimulator: Interactive monthly deposit calculator with compound interest
+✅ RebalanceHistory: Recent activity feed (last 5 chapters)
+✅ HealthScore: 0-100 circular gauge with 4 weighted factors
+
+## Phase 4 — Engagement & Sharing (P3 & P4)
+✅ WeeklyDigest: Auto-generated weekly report with dismissable UI
+✅ ShareChapter: Twitter, Farcaster, copy link with OG image generation
+✅ OG Images: @vercel/og dynamic images (1200x630, dark theme)
+✅ MilestoneNFT: 4-step celebration flow with wagmi integration
+✅ Toaster: Sonner toast system with custom styling
+
+## Components Created (13)
+- RiskMood.tsx, ReasoningLog.tsx, YieldComparison.tsx
+- GoalSimulator.tsx, RebalanceHistory.tsx, HealthScore.tsx
+- WeeklyDigest.tsx, ShareChapter.tsx, MilestoneNFT.tsx
+- Toaster.tsx
+
+## API Routes Added (5)
+- /api/mood (market stress)
+- /api/reasoning (agent signals)
+- /api/apy (live USDY/mETH rates)
+- /api/yield-comparison (competitive analysis)
+- /api/og/chapter (OG image generation, Edge runtime)
+
+## Updated Files
+- app/page.tsx: Integrated all new widgets
+- chat/page.tsx: Context-aware + persistence
+- chronicle/page.tsx: Milestone trigger
+- ChapterModal.tsx: Share button
+- layout.tsx: Toaster provider
+- /api/chat/route.ts: Context enrichment
+
+## Technical
+- Build: ✅ Passing (42s compile, 0 errors)
+- TypeScript: ✅ Strict mode, all types verified
+- Dependencies: Added @vercel/og for OG generation
+- Design: Consistent with existing system (dark + amber accent)
+- Performance: API caching, conditional rendering, optimized refresh intervals
+
+See IMPLEMENTATION_SUMMARY.md for full details.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
