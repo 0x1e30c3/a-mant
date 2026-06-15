@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import logo from "@/logo.png";
 import { Container, T } from "./primitives";
 
 // ─── Navbar — fixed, centered inside the same max-width column ─────────────────
@@ -17,15 +19,10 @@ export function Navbar() {
             boxShadow: "0 4px 20px rgba(20,20,30,0.06)",
           }}
         >
-          <div className="flex items-center gap-2">
-            <div
-              className="w-5 h-5 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.4)" }}
-            >
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: T.accent }} />
-            </div>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src={logo} alt="a-MANT" width={22} height={22} priority className="rounded-md" />
             <span className="text-[13px] font-semibold tracking-tight">a-MANT</span>
-          </div>
+          </Link>
 
           <div className="hidden md:flex items-center gap-6 text-[12px] text-muted-foreground">
             <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
