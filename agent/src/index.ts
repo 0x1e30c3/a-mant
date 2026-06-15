@@ -8,6 +8,7 @@ import { makeDecision, shouldExecute } from "./engine/decision.js";
 import {
   executeDecision,
   logAgentDecision,
+  recordReputationFeedback,
   writeChapter,
   getUserState,
 } from "./executor/index.js";
@@ -52,7 +53,7 @@ async function runCycle(userAddress: `0x${string}`) {
   // 3. Execute on-chain
   const txHash = await executeDecision(userAddress, decision, userState.agentId);
 
-  // 4. Generate narrative chapter via Claude
+  // 4. Generate narrative chapter via LLM (NVIDIA NIM)
   const chapter = await generateChapter(decision, macro, onChain);
   console.log(`[agent] Chapter: "${chapter.title}"`);
 
@@ -73,6 +74,9 @@ async function runCycle(userAddress: `0x${string}`) {
       decision,
       txHash ? `Executed: ${txHash}` : "Logged without execution"
     );
+
+    // 7. Publish ERC-8004 reputation signal (no-op if REPUTATION_ADDRESS unset)
+    await recordReputationFeedback(userState.agentId, decision);
   }
 
   console.log(`[agent] Cycle complete for ${userAddress}`);
