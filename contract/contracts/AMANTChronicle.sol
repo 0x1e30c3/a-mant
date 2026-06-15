@@ -21,7 +21,8 @@ contract AMANTChronicle is ERC721URIStorage, Ownable {
     mapping(address => Chapter[]) public userChapters;
     mapping(address => uint256) public milestoneCount;
 
-    address public authorizedWriter; // agent or vault
+    address public authorizedWriter;          // primary writer (agent backend)
+    mapping(address => bool) public writers;   // additional writers (e.g. the vault)
 
     event ChapterCreated(
         address indexed user,
@@ -34,7 +35,7 @@ contract AMANTChronicle is ERC721URIStorage, Ownable {
 
     modifier onlyWriter() {
         require(
-            msg.sender == authorizedWriter || msg.sender == owner(),
+            msg.sender == authorizedWriter || writers[msg.sender] || msg.sender == owner(),
             "AMANT: only writer"
         );
         _;
@@ -111,5 +112,11 @@ contract AMANTChronicle is ERC721URIStorage, Ownable {
 
     function setAuthorizedWriter(address _writer) external onlyOwner {
         authorizedWriter = _writer;
+    }
+
+    /// @notice Grant/revoke an additional writer (e.g. the vault, which writes the
+    ///         genesis chapter on a user's first deposit).
+    function setWriter(address _writer, bool _allowed) external onlyOwner {
+        writers[_writer] = _allowed;
     }
 }
