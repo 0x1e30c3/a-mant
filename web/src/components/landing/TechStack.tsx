@@ -9,7 +9,7 @@ export function TechStack() {
     { label: "USDY · Ondo", sub: "RWA stablecoin" },
     { label: "mETH", sub: "Liquid staking" },
     { label: "LI.FI", sub: "DEX aggregator" },
-    { label: "Claude AI", sub: "Narrative + SAGE" },
+    { label: "LLM", sub: "Narrative + SAGE" },
     { label: "ERC-8004", sub: "AI identity NFT" },
   ];
   return (
