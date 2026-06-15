@@ -18,15 +18,32 @@ Keep responses concise: 2-4 sentences max unless the user asks for detail. Never
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, userAddress } = await req.json();
+    const { messages, userAddress, vaultContext, recentChapters } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: "Invalid messages" }, { status: 400 });
     }
 
-    const contextNote = userAddress
-      ? `[User wallet: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}]`
-      : "";
+    // Build context string
+    let contextNote = "";
+
+    if (userAddress) {
+      contextNote += `[User wallet: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}]\n`;
+    }
+
+    if (vaultContext) {
+      contextNote += `[Portfolio: $${vaultContext.totalValue} total, Goal: $${(
+        Number(vaultContext.goalAmount) / 1e18
+      ).toFixed(2)}, USDY: $${(Number(vaultContext.usdyAmount) / 1e18).toFixed(2)}, mETH: ${(
+        Number(vaultContext.methAmount) / 1e18
+      ).toFixed(4)}]\n`;
+    }
+
+    if (recentChapters && recentChapters.length > 0) {
+      contextNote += `[Recent decisions: ${recentChapters
+        .map((c: any) => `"${c.title}"`)
+        .join(", ")}]\n`;
+    }
 
     const chatMessages = messages.map(
       (m: { role: string; content: string }) => ({
@@ -38,7 +55,7 @@ export async function POST(req: NextRequest) {
     if (contextNote && chatMessages[0]?.role === "user") {
       chatMessages[0] = {
         role: "user",
-        content: `${contextNote}\n\n${chatMessages[0].content}`,
+        content: `${contextNote}\n${chatMessages[0].content}`,
       };
     }
 
