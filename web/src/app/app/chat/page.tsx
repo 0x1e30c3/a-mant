@@ -6,6 +6,8 @@ import { useAccount } from "wagmi";
 import { ArrowUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { A, LiveDot } from "@/components/app/ui";
+import { useTotalValue, useVaultPosition } from "@/hooks/useVault";
+import { useChapters } from "@/hooks/useAgent";
 
 interface Message {
   role: "user" | "assistant";
@@ -13,19 +15,46 @@ interface Message {
 }
 
 const STARTER_PROMPTS = [
-  "Why did you move my funds last night?",
-  "What's the current yield on USDY?",
-  "How is my portfolio doing?",
+  "Why did you rebalance?",
+  "How's my goal progress?",
+  "What's your current strategy?",
   "When will I reach my goal?",
 ];
 
+const CHAT_STORAGE_KEY = "axiom-chat-history";
+
 export default function ChatPage() {
   const { address } = useAccount();
+  const { totalFormatted } = useTotalValue();
+  const { position } = useVaultPosition();
+  const { chapters } = useChapters();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Load chat history from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setMessages(parsed.slice(-20)); // Keep last 20 messages
+        }
+      } catch (err) {
+        console.error("Failed to load chat history:", err);
+      }
+    }
+  }, []);
+
+  // Save to localStorage when messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages.slice(-20)));
+    }
+  }, [messages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,11 +69,34 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
+      // Build context from vault position + recent chapters
+      const vaultContext = position
+        ? {
+            totalValue: totalFormatted,
+            goalAmount: position.goalAmount.toString(),
+            riskMode: position.riskMode,
+            usdyAmount: position.usdyAmount.toString(),
+            methAmount: position.methAmount.toString(),
+          }
+        : null;
+
+      const recentChapters = chapters.slice(-3).map((c) => ({
+        title: c.title,
+        narrative: c.narrative,
+        chapterType: c.chapterType,
+      }));
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [...messages, userMsg], userAddress: address }),
+        body: JSON.stringify({
+          messages: [...messages, userMsg],
+          userAddress: address,
+          vaultContext,
+          recentChapters,
+        }),
       });
+
       if (!res.ok) throw new Error("API error");
       const data = await res.json();
       setMessages((m) => [...m, { role: "assistant", content: data.content }]);
