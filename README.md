@@ -26,13 +26,17 @@ a-MANT
 └── SAGE Interface   — Ask Axiom anything about your portfolio
 ```
 
-### Three Smart Contracts
+### Smart Contracts
 
 | Contract | Role |
 |---|---|
-| `AMANTVault` | Holds user funds (USDY + mETH), records allocations |
-| `AMANTAgent` | ERC-8004 soulbound NFT — AI identity + reputation scoring |
+| `AMANTVault` | Holds user funds (USDY + mETH), records allocations, swaps via LI.FI |
+| `AMANTAgent` | **ERC-8004 Identity Registry** — soulbound agent NFT (AgentCard URI + metadata), plus a-MANT decision journal & impact reputation |
+| `ReputationRegistry` | **ERC-8004** — independent clients publish bounded, tagged feedback signals on an agent |
+| `ValidationRegistry` | **ERC-8004** — validators attest (0–100) that an agent's work was independently checked |
 | `AMANTChronicle` | ERC-721 milestone NFTs — on-chain chapter record |
+
+The three registries follow the [ERC-8004 "Trustless Agents"](https://eips.ethereum.org/EIPS/eip-8004) standard. Compliance is covered by `contract/test/erc8004.test.ts` (`pnpm test:contract`).
 
 ### Agent Decision Rules (Priority Order)
 
@@ -56,7 +60,7 @@ a-mant/
 │       │   ├── app/page.tsx          # Dashboard
 │       │   ├── app/chronicle/page.tsx # Chapter timeline
 │       │   ├── app/chat/page.tsx     # SAGE chat interface
-│       │   └── api/chat/route.ts     # Claude API proxy
+│       │   └── api/chat/route.ts     # LLM API proxy (NVIDIA NIM)
 │       ├── components/ui/   # Button, Card, Progress
 │       ├── hooks/           # useVault, useAgent (wagmi read hooks)
 │       ├── lib/             # wagmi config, contract ABIs
@@ -80,7 +84,7 @@ a-mant/
         ├── executor/
         │   └── index.ts     # viem write client — executes on-chain
         ├── narrator/
-        │   └── index.ts     # Claude API — generates chapter narratives
+        │   └── index.ts     # LLM API (NVIDIA NIM) — generates chapter narratives
         └── index.ts         # node-cron, runs every 15 minutes
 ```
 
@@ -95,7 +99,7 @@ a-mant/
 | Web3 | wagmi v2, viem, injected + MetaMask connectors |
 | Smart Contracts | Solidity 0.8.24, OpenZeppelin v5.2, Hardhat |
 | Agent | Node.js, viem write client, node-cron |
-| AI | Anthropic Claude claude-sonnet-4-6 (narratives + chat) |
+| AI | NVIDIA NIM — meta/llama-3.1-8b-instruct (narratives + chat) |
 | Data | FRED API, beaconcha.in, DeFiLlama, alternative.me |
 | Chain | Mantle L2 (chainId 5000 mainnet / 5003 testnet) |
 
@@ -127,7 +131,7 @@ NEXT_PUBLIC_AGENT_ADDRESS=0x...
 NEXT_PUBLIC_CHRONICLE_ADDRESS=0x...
 
 # AI
-ANTHROPIC_API_KEY=sk-ant-...
+NVIDIA_API_KEY=...
 
 # Signal data
 FRED_API_KEY=...        # https://fred.stlouisfed.org/docs/api/api_key.html
