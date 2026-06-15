@@ -9,8 +9,16 @@ import { ArrowDownToLine, ArrowUpRight, ShieldCheck, Coins, Zap, TrendingUp, Boo
 import { GlassCard, Pill, SectionLabel, LiveDot, A } from "@/components/app/ui";
 import { DepositModal } from "@/components/app/DepositModal";
 import { GrowthChart } from "@/components/app/GrowthChart";
+import { RiskMood } from "@/components/app/RiskMood";
+import { ReasoningLog } from "@/components/app/ReasoningLog";
+import { YieldComparison } from "@/components/app/YieldComparison";
+import { GoalSimulator } from "@/components/app/GoalSimulator";
+import { RebalanceHistory } from "@/components/app/RebalanceHistory";
+import { HealthScore } from "@/components/app/HealthScore";
+import { WeeklyDigest } from "@/components/app/WeeklyDigest";
 import { useTotalValue, useVaultPosition, usePendingYield } from "@/hooks/useVault";
 import { useAgentProfile, useChapters } from "@/hooks/useAgent";
+import { useAPY } from "@/hooks/useAPY";
 import { CHAPTER_TYPE_LABELS, RISK_LABELS, RiskMode } from "@/types";
 import { formatUnits } from "viem";
 
@@ -37,6 +45,7 @@ export default function DashboardPage() {
   const { yieldFormatted } = usePendingYield();
   const { profile, hasAgent } = useAgentProfile();
   const { latestChapter } = useChapters();
+  const { usdyAPY, methAPY } = useAPY();
 
   const goalPct =
     position?.active && position.goalAmount > 0n
@@ -48,6 +57,14 @@ export default function DashboardPage() {
   return (
     <div className="pt-6 lg:pt-8">
       <DepositModal open={depositOpen} onClose={() => setDepositOpen(false)} />
+
+      {/* Risk Mood Indicator (top right) */}
+      <motion.div {...fade(0)} className="mb-4 flex justify-end">
+        <RiskMood />
+      </motion.div>
+
+      {/* Weekly Digest (appears at top when available) */}
+      <WeeklyDigest className="mb-4" />
 
       {/* ── Two-column grid ── */}
       <div className="grid lg:grid-cols-3 gap-4 lg:items-stretch">
@@ -122,13 +139,13 @@ export default function DashboardPage() {
               <AllocCard
                 dot={A.accent}
                 label="USDY"
-                sub="Treasury · 4.5% APY"
+                sub={`Treasury · ${usdyAPY}% APY`}
                 value={`$${fmt(formatUnits(position.usdyAmount, 18))}`}
               />
               <AllocCard
                 dot="hsl(var(--protective))"
                 label="mETH"
-                sub="Staking · 3.8% APY"
+                sub={`Staking · ${methAPY}% APY`}
                 value={parseFloat(formatUnits(position.methAmount, 18)).toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
               />
             </motion.div>
@@ -181,6 +198,13 @@ export default function DashboardPage() {
             </motion.div>
           )}
 
+          {/* Rebalance History (when chapters exist) */}
+          {latestChapter && (
+            <motion.div {...fade(0.18)}>
+              <RebalanceHistory />
+            </motion.div>
+          )}
+
           {/* Growth chart — flex-1 fills remaining height to match side column */}
           <motion.div {...fade(0.2)} className="flex-1 min-h-0">
             <GrowthChart principal={parseFloat(totalFormatted)} />
@@ -189,6 +213,13 @@ export default function DashboardPage() {
 
         {/* ── Side column ── */}
         <div className="space-y-4">
+          {/* Reasoning Log (when agent active) */}
+          {hasAgent && (
+            <motion.div {...fade(0.18)}>
+              <ReasoningLog />
+            </motion.div>
+          )}
+
           {/* Axiom status */}
           {hasAgent && profile ? (
             <motion.div {...fade(0.2)}>
@@ -310,8 +341,8 @@ export default function DashboardPage() {
               <SectionLabel className="mb-4">Current APY rates</SectionLabel>
               <div className="space-y-3">
                 {[
-                  { label: "USDY", sub: "Ondo Finance · Treasury", apy: "4.5%", dot: A.accent },
-                  { label: "mETH", sub: "Mantle · ETH Staking", apy: "3.8%", dot: "hsl(var(--protective))" },
+                  { label: "USDY", sub: "Ondo Finance · Treasury", apy: `${usdyAPY}%`, dot: A.accent },
+                  { label: "mETH", sub: "Mantle · ETH Staking", apy: `${methAPY}%`, dot: "hsl(var(--protective))" },
                 ].map(({ label, sub, apy, dot }) => (
                   <div key={label} className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
@@ -327,6 +358,25 @@ export default function DashboardPage() {
               </div>
             </GlassCard>
           </motion.div>
+
+          {/* Yield Comparison */}
+          <motion.div {...fade(0.40)}>
+            <YieldComparison />
+          </motion.div>
+
+          {/* Goal Simulator (only show if goal is set) */}
+          {position && position.goalAmount > 0n && (
+            <motion.div {...fade(0.46)}>
+              <GoalSimulator />
+            </motion.div>
+          )}
+
+          {/* Portfolio Health Score (only show if position active) */}
+          {position && position.active && (
+            <motion.div {...fade(0.52)}>
+              <HealthScore />
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
