@@ -5,7 +5,7 @@
 pnpm monorepo with 3 packages:
 - `web/` — Next.js 15 + React 19 frontend (wagmi, viem, zustand, Tailwind)
 - `contract/` — Hardhat Solidity 0.8.24 (OpenZeppelin 5.2)
-- `agent/` — Node.js autonomous agent (viem write client, node-cron, Claude API)
+- `agent/` — Node.js autonomous agent (viem write client, node-cron, LLM via NVIDIA NIM)
 
 Each package is independent. No shared code between them except contract ABIs (generated in `contract/artifacts/`).
 
@@ -29,8 +29,8 @@ No root-level lint or typecheck command. Verify web changes with `pnpm build:web
 - **Hardhat config** loads `.env` from `../.env` (root), not `contract/.env`.
 - **Agent env**: copy root `.env` into `agent/.env` before running locally.
 - **Contract deploy** wires contracts together (vault↔agent, vault↔chronicle, chronicle↔agent). See `contract/scripts/deploy.ts`.
-- **ERC-8004**: Agent identity contract (soulbound NFT). This is a hackathon-specific standard — do not confuse with standard ERC-721.
-- **Solidity**: optimizer enabled, 200 runs, evmVersion `cancun`. Keep this when modifying contracts.
+- **ERC-8004 "Trustless Agents"**: implemented as three registries — `AMANTAgent` (Identity, soulbound + AgentCard URI + metadata), `ReputationRegistry`, `ValidationRegistry`. Compliance tested in `contract/test/erc8004.test.ts`. `AMANTAgent` agentIds are 1-indexed (0 = "no agent"); transfers revert (a-MANT soulbound policy).
+- **Solidity**: optimizer enabled, 200 runs, evmVersion `cancun`, **`viaIR: true`** (the registries emit wide events that overflow the stack without it). Keep these when modifying contracts.
 - **Web path aliases**: `@/*` maps to `./src/*`.
 - **Agent path aliases**: `@/*` maps to `./src/*` (same pattern, different base).
 
@@ -43,14 +43,17 @@ No root-level lint or typecheck command. Verify web changes with `pnpm build:web
 
 ## Smart Contracts
 
-Three contracts, all in `contract/contracts/`:
-- `AMANTVault.sol` — holds USDY + mETH, manages deposits/withdrawals/rebalance
-- `AMANTAgent.sol` — ERC-8004 agent identity, reputation scoring, authorized actions
+In `contract/contracts/`:
+- `AMANTVault.sol` — holds USDY + mETH, manages deposits/withdrawals/rebalance, swaps via LI.FI
+- `AMANTAgent.sol` — ERC-8004 Identity Registry (soulbound NFT, AgentCard URI, metadata, `isAuthorizedOrOwner`) + a-MANT decision journal & impact reputation
+- `ReputationRegistry.sol` — ERC-8004 Reputation Registry (client feedback, self-feedback blocked)
+- `ValidationRegistry.sol` — ERC-8004 Validation Registry (validator attestations 0–100)
 - `AMANTChronicle.sol` — ERC-721 NFTs for on-chain chapter records
+- `AMANTVaultTestnet.sol` + `MockERC20.sol` — testnet-only mocks
 
 ## Agent Architecture
 
-Runs on `node-cron` (every 15 min). Decision engine in `agent/src/engine/decision.ts` implements 5-rule priority system (see CONTEXT.md for full rule spec). Signals come from `agent/src/signals/` (FRED, beaconcha.in, DeFiLlama, on-chain APY). Narratives generated via Claude API in `agent/src/narrator/`.
+Runs on `node-cron` (every 15 min). Decision engine in `agent/src/engine/decision.ts` implements 5-rule priority system (see CONTEXT.md for full rule spec). Signals come from `agent/src/signals/` (FRED, beaconcha.in, DeFiLlama, on-chain APY). Narratives generated via LLM (NVIDIA NIM, meta/llama-3.1-8b-instruct) in `agent/src/narrator/`.
 
 ## Frontend Routing
 
@@ -59,4 +62,4 @@ Runs on `node-cron` (every 15 min). Decision engine in `agent/src/engine/decisio
 - `/app` — dashboard (main view)
 - `/app/chronicle` — chapter timeline
 - `/app/chat` — SAGE chat interface
-- `/api/chat` — Claude API proxy (route handler)
+- `/api/chat` — LLM API proxy (NVIDIA NIM, route handler)
