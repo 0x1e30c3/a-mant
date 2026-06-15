@@ -76,7 +76,7 @@ Keep it personal, warm, and clear. Do not use technical terms like APY, DeFi, li
     console.error("[narrator] Nvidia NIM generation failed:", err);
   }
 
-  // Fallback if Claude fails
+  // Fallback if LLM fails
   return {
     title: generateFallbackTitle(decision),
     narrative: decision.reason,
