@@ -6,7 +6,7 @@ import { SectionBlock } from "./primitives";
 export function Marquee() {
   const items = [
     "Autonomous AI", "Mantle L2", "USDY · RWA", "mETH · Staking", "LI.FI Routes",
-    "ERC-8004 Agent", "Non-custodial", "24/7 Monitoring", "Claude AI",
+    "ERC-8004 Agent", "Non-custodial", "24/7 Monitoring", "LLM",
   ];
   return (
     <SectionBlock>
