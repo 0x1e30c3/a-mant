@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import logo from "@/logo.png";
 import { usePathname } from "next/navigation";
 import { useAccount, useDisconnect } from "wagmi";
 import { Wallet, ScrollText, Sparkles, LogOut } from "lucide-react";
@@ -31,12 +33,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(16px)", border: `1px solid ${A.hairline}`, boxShadow: "0 1px 3px rgba(20,20,30,0.05)" }}
           >
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <span
-                className="w-5 h-5 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(194,138,30,0.12)", border: "1px solid rgba(194,138,30,0.4)" }}
-              >
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: A.accent }} />
-              </span>
+              <Image src={logo} alt="a-MANT" width={24} height={24} priority className="rounded-md" />
               <span className="text-[13px] font-semibold tracking-tight hidden sm:inline">a-MANT</span>
             </Link>
 
