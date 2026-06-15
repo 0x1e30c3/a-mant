@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import logo from "@/logo.png";
 import { useAccount, useConnect } from "wagmi";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -55,9 +58,12 @@ export default function OnboardingPage() {
       </div>
 
       <div className="flex justify-between items-center px-6 pt-6">
-        <span className="text-xs text-muted-foreground font-medium tracking-widest uppercase">
-          a-MANT
-        </span>
+        <Link href="/" className="flex items-center gap-2">
+          <Image src={logo} alt="a-MANT" width={20} height={20} priority className="rounded" />
+          <span className="text-xs text-muted-foreground font-medium tracking-widest uppercase">
+            a-MANT
+          </span>
+        </Link>
         {step !== "activate" && (
           <button
             onClick={() =>
