@@ -67,8 +67,23 @@ async function main() {
     const chronicleAddress = await chronicle.getAddress();
     console.log("   ✓ AMANTChronicle:", chronicleAddress);
 
+    // ── Deploy ERC-8004 Reputation + Validation registries ─────────────────────
+    console.log("6. Deploying ReputationRegistry (ERC-8004)...");
+    const ReputationRegistry = await ethers.getContractFactory("ReputationRegistry");
+    const reputation = await ReputationRegistry.deploy(agentAddress);
+    await reputation.waitForDeployment();
+    const reputationAddress = await reputation.getAddress();
+    console.log("   ✓ ReputationRegistry:", reputationAddress);
+
+    console.log("7. Deploying ValidationRegistry (ERC-8004)...");
+    const ValidationRegistry = await ethers.getContractFactory("ValidationRegistry");
+    const validation = await ValidationRegistry.deploy(agentAddress);
+    await validation.waitForDeployment();
+    const validationAddress = await validation.getAddress();
+    console.log("   ✓ ValidationRegistry:", validationAddress);
+
     // ── Wire contracts ───────────────────────────────────────────────────────
-    console.log("\n6. Wiring contracts...");
+    console.log("\n8. Wiring contracts...");
     await vault.setChronicle(chronicleAddress);
     console.log("   vault.setChronicle ✓");
     await agent.setVault(vaultAddress);
@@ -77,12 +92,16 @@ async function main() {
     console.log("   agent.setAuthorizedLogger (deployer) ✓");
     await chronicle.setAuthorizedWriter(deployer.address);
     console.log("   chronicle.setAuthorizedWriter (deployer) ✓");
+    await chronicle.setWriter(vaultAddress, true);
+    console.log("   chronicle.setWriter (vault → genesis chapter) ✓");
 
     // ── Print env vars ───────────────────────────────────────────────────────
     console.log("\n─── Copy to .env ────────────────────────────────────");
     console.log(`NEXT_PUBLIC_VAULT_ADDRESS=${vaultAddress}`);
     console.log(`NEXT_PUBLIC_AGENT_ADDRESS=${agentAddress}`);
     console.log(`NEXT_PUBLIC_CHRONICLE_ADDRESS=${chronicleAddress}`);
+    console.log(`NEXT_PUBLIC_REPUTATION_ADDRESS=${reputationAddress}`);
+    console.log(`NEXT_PUBLIC_VALIDATION_ADDRESS=${validationAddress}`);
     console.log(`NEXT_PUBLIC_USDY_ADDRESS=${usdyAddress}`);
     console.log(`NEXT_PUBLIC_METH_ADDRESS=${methAddress}`);
     console.log(`NEXT_PUBLIC_CHAIN_ID=5003`);
@@ -118,6 +137,21 @@ async function main() {
     const chronicleAddress = await chronicle.getAddress();
     console.log("   ✓ AMANTChronicle:", chronicleAddress);
 
+    // ── 3b. ERC-8004 Reputation + Validation registries ────────────────────
+    console.log("3b. Deploying ReputationRegistry (ERC-8004)...");
+    const ReputationRegistry = await ethers.getContractFactory("ReputationRegistry");
+    const reputation = await ReputationRegistry.deploy(agentAddress);
+    await reputation.waitForDeployment();
+    const reputationAddress = await reputation.getAddress();
+    console.log("   ✓ ReputationRegistry:", reputationAddress);
+
+    console.log("3c. Deploying ValidationRegistry (ERC-8004)...");
+    const ValidationRegistry = await ethers.getContractFactory("ValidationRegistry");
+    const validation = await ValidationRegistry.deploy(agentAddress);
+    await validation.waitForDeployment();
+    const validationAddress = await validation.getAddress();
+    console.log("   ✓ ValidationRegistry:", validationAddress);
+
     // ── 4. Wire contracts ──────────────────────────────────────────────────
     console.log("\n4. Wiring contracts...");
     await vault.setChronicle(chronicleAddress);
@@ -128,6 +162,8 @@ async function main() {
     console.log("   agent.setAuthorizedLogger (deployer) ✓");
     await chronicle.setAuthorizedWriter(deployer.address);
     console.log("   chronicle.setAuthorizedWriter (deployer) ✓");
+    await chronicle.setWriter(vaultAddress, true);
+    console.log("   chronicle.setWriter (vault → genesis chapter) ✓");
 
     // ── 5. Configure LI.FI ────────────────────────────────────────────────
     console.log("\n5. Configuring LI.FI integration...");
@@ -139,11 +175,15 @@ async function main() {
     console.log(`NEXT_PUBLIC_VAULT_ADDRESS=${vaultAddress}`);
     console.log(`NEXT_PUBLIC_AGENT_ADDRESS=${agentAddress}`);
     console.log(`NEXT_PUBLIC_CHRONICLE_ADDRESS=${chronicleAddress}`);
+    console.log(`NEXT_PUBLIC_REPUTATION_ADDRESS=${reputationAddress}`);
+    console.log(`NEXT_PUBLIC_VALIDATION_ADDRESS=${validationAddress}`);
     console.log("─────────────────────────────────────────────────────");
     console.log("\nAlso add to agent .env:");
     console.log(`VAULT_ADDRESS=${vaultAddress}`);
     console.log(`AGENT_ADDRESS=${agentAddress}`);
     console.log(`CHRONICLE_ADDRESS=${chronicleAddress}`);
+    console.log(`REPUTATION_ADDRESS=${reputationAddress}`);
+    console.log(`VALIDATION_ADDRESS=${validationAddress}`);
     console.log("─────────────────────────────────────────────────────");
   }
 
