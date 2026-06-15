@@ -391,7 +391,7 @@ Execution Layer
 | Frontend | Next.js 15 + Tailwind CSS + Framer Motion |
 | Smart Contracts | Solidity on Mantle L2 |
 | AI Agent Identity | ERC-8004 (Identity + Reputation + Validation Registry) |
-| Conversational AI | Claude API (claude-sonnet-4-6) |
+| Conversational AI | NVIDIA NIM (meta/llama-3.1-8b-instruct) |
 | RWA Assets | USDY (Ondo Finance), mETH (Mantle LSP) |
 | DeFi Protocols | Aave Mantle, Agni Finance, Merchant Moe |
 | On-chain Data | The Graph subgraph (Mantle) |
