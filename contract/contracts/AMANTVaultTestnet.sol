@@ -123,13 +123,16 @@ contract AMANTVaultTestnet is Ownable, ReentrancyGuard {
 
         emit Deposited(msg.sender, token, amount);
 
+        string memory tokenName = token == usdyToken ? "USDY" : "mETH";
+
         if (firstDeposit) {
             _writeGenesisChapter(msg.sender);
+        } else {
+            _writeDepositChapter(msg.sender, tokenName, amount);
         }
     }
 
     /// @dev Writes the user's first Chronicle chapter on their first deposit.
-    ///      Best-effort: never blocks a deposit if the Chronicle write reverts.
     function _writeGenesisChapter(address user) internal {
         if (chronicleContract == address(0)) return;
         try IChronicle(chronicleContract).createChapter(
@@ -140,6 +143,63 @@ contract AMANTVaultTestnet is Ownable, ReentrancyGuard {
             4, // ChapterType.DEPOSIT
             ""
         ) returns (uint256) {} catch {}
+    }
+
+    /// @dev Writes a chapter on every subsequent deposit.
+    function _writeDepositChapter(address user, string memory tokenName, uint256 amount) internal {
+        if (chronicleContract == address(0)) return;
+
+        UserPosition memory pos = positions[user];
+        uint256 totalBalance = pos.usdyAmount + pos.methAmount;
+
+        string memory title = "Growing stronger";
+        string memory narrative = string(
+            abi.encodePacked(
+                "You added ",
+                _formatAmount(amount),
+                " ",
+                tokenName,
+                " to your vault. Total savings: ",
+                _formatAmount(totalBalance),
+                ". Axiom continues watching over your growing savings."
+            )
+        );
+
+        try IChronicle(chronicleContract).createChapter(
+            user,
+            title,
+            narrative,
+            int256(0),
+            4, // ChapterType.DEPOSIT
+            ""
+        ) returns (uint256) {} catch {}
+    }
+
+    /// @dev Formats a wei amount to a human-readable string (e.g. "500.00").
+    function _formatAmount(uint256 amount) internal pure returns (string memory) {
+        uint256 whole = amount / 1e18;
+        uint256 frac = (amount % 1e18) / 1e16;
+        if (frac == 0) {
+            return _toString(whole);
+        }
+        return string(abi.encodePacked(_toString(whole), ".", _toString(frac < 10 ? frac * 10 : frac)));
+    }
+
+    function _toString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) return "0";
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        return string(buffer);
     }
 
     function withdraw(address token, uint256 amount) external nonReentrant {
